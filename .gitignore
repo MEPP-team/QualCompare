@@ -1,0 +1,19 @@
+# Completely excluding image containing folders : "out", "Out", "images", "Images", "model", "Model", "models", "Models"
+**/[Oo]ut/
+**/[Mm]odel/
+**/[Ii]mages/
+**/.vs/
+**/bin/
+**/obj/
+*/.vscode/
+*/PatchifyWrapper/x64/
+*/x64/
+*/Release/
+/patchify/patchify/
+# Excluding specific file types
+*.pdb
+*.obj
+*.pch
+*.tlog
+*.dll
+Obsidian Vault/.obsidian/workspace.json
