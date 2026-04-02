@@ -1,4 +1,4 @@
-
+﻿
 # How to install opencv on the current blender python version
 
 ## Windows
@@ -14,7 +14,7 @@ cd "C:\Program Files\Blender Foundation\Blender X.Y\X.Y\python\bin"
 
 ### If it didn't work
 
-#### 1° Use the good python interpretor
+#### 1Â° Use the good python interpretor
 
 ##### 2) Open new Powershell with admin rights
 
@@ -29,7 +29,7 @@ cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
 ./python.exe -m pip install --force-reinstall opencv-python
 ```
 
-#### 2° Use a temporary venv to download and copy
+#### 2Â° Use a temporary venv to download and copy
 
 Install opencv-python in a custom temporary virtual environment and copy the files manually :
 
@@ -61,3 +61,4 @@ cp -Path opencv_env\Lib\site-packages\ -Destination "C:\Program Files\Blender Fo
 ```bash
 rm opencv_env
 ```
+

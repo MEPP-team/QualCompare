@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace CompareMetrics
+namespace QualCompare
 {
     public partial class MainWindow : Window
     {
@@ -37,19 +37,20 @@ namespace CompareMetrics
                         FibonacciGrid.Visibility = Visibility.Visible;
                         YFixedGrid.Visibility = Visibility.Collapsed;
                         break;
-                    case "Y fixé":
+                    case "Y fixÃ©":
                         YFixedGrid.Visibility = Visibility.Visible;
                         break;
-                    case "Polyèdrale":
+                    case "PolyÃ¨drale":
                         PolyhedronGrid.Visibility = Visibility.Visible;
                         YFixedGrid.Visibility = Visibility.Collapsed;
                         NbViewsTextBox.IsEnabled = false;
-                        NbViewsTextBox.Text = "4"; // Tetraèdre sélectionné par défaut
+                        NbViewsTextBox.Text = "4"; // TetraÃ¨dre sÃ©lectionnÃ© par dÃ©faut
                         break;
                 }
             }
 
             Config = LoadConfig() ?? new AppConfig();
+            EnsureFirstRunConfiguration();
             ApplyConfigToUI();
             TryAutoFillOutputFolder();
         }
@@ -57,7 +58,7 @@ namespace CompareMetrics
         private void SelectObjFile_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
-            // On définit le dossier présélectionné comme étant le dossier en mémoire 
+            // On dÃ©finit le dossier prÃ©sÃ©lectionnÃ© comme Ã©tant le dossier en mÃ©moire 
             dialog.RootFolder = Environment.SpecialFolder.MyComputer;
             dialog.SelectedPath = ObjFilePathTextBox.Text;
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -130,3 +131,4 @@ namespace CompareMetrics
         }
     }
 }
+

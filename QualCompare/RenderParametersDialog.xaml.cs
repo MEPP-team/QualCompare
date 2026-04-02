@@ -8,7 +8,7 @@ using Microsoft.Win32;
 using Forms = System.Windows.Forms;
 using System.Drawing; // for Color
 
-namespace CompareMetrics
+namespace QualCompare
 {
     public partial class RenderParametersDialog : Window
     {
@@ -250,3 +250,4 @@ namespace CompareMetrics
         }
     }
 }
+

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -73,18 +73,30 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\\include\\opencv2\\opencv.hpp')">$(OPENCV_DIR)</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\\..\\..\\include\\opencv2\\opencv.hpp')">$(OPENCV_DIR)\..\..</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\\Program Files\\opencv\\build\\include\\opencv2\\opencv.hpp')">C:\Program Files\opencv\build</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\\Program Files (x86)\\opencv\\build\\include\\opencv2\\opencv.hpp')">C:\Program Files (x86)\opencv\build</OpenCvBuildDir>
+    <OpenCvIncludeDir Condition="'$(OpenCvIncludeDir)'=='' and '$(OpenCvBuildDir)'!=''">$(OpenCvBuildDir)\include</OpenCvIncludeDir>
+    <OpenCvLibDir Condition="'$(OpenCvLibDir)'=='' and Exists('$(OpenCvBuildDir)\\x64\\vc17\\lib')">$(OpenCvBuildDir)\x64\vc17\lib</OpenCvLibDir>
+    <OpenCvLibDir Condition="'$(OpenCvLibDir)'=='' and Exists('$(OpenCvBuildDir)\\x64\\vc16\\lib')">$(OpenCvBuildDir)\x64\vc16\lib</OpenCvLibDir>
+    <OpenCvWorldLibDebug Condition="'$(OpenCvWorldLibDebug)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4120d.lib')">opencv_world4120d.lib</OpenCvWorldLibDebug>
+    <OpenCvWorldLibDebug Condition="'$(OpenCvWorldLibDebug)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4110d.lib')">opencv_world4110d.lib</OpenCvWorldLibDebug>
+    <OpenCvWorldLibRelease Condition="'$(OpenCvWorldLibRelease)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4120.lib')">opencv_world4120.lib</OpenCvWorldLibRelease>
+    <OpenCvWorldLibRelease Condition="'$(OpenCvWorldLibRelease)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4110.lib')">opencv_world4110.lib</OpenCvWorldLibRelease>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenCvIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opencv_world4110d.lib;patchify.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\opencv\build\x64\vc16\lib;D:\These\Projets\patchify\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OpenCvWorldLibDebug);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OpenCvLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -115,11 +127,11 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenCvIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opencv_world4110.lib;patchify.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\opencv\build\x64\vc16\lib;D:\These\Projets\patchify\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OpenCvWorldLibRelease);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OpenCvLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -148,7 +160,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\patchify\patchify.vcxproj">
+      <Project>{7FE32A37-25DB-4A97-ABBF-9460752EE5C3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
+

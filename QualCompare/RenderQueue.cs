@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace CompareMetrics
+namespace QualCompare
 {
     public partial class MainWindow : Window
     {
@@ -530,3 +530,4 @@ namespace CompareMetrics
         }
     }
 }
+

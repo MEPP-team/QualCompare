@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -75,6 +75,19 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\\include\\opencv2\\opencv.hpp')">$(OPENCV_DIR)</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\\..\\..\\include\\opencv2\\opencv.hpp')">$(OPENCV_DIR)\..\..</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\\Program Files\\opencv\\build\\include\\opencv2\\opencv.hpp')">C:\Program Files\opencv\build</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\\Program Files (x86)\\opencv\\build\\include\\opencv2\\opencv.hpp')">C:\Program Files (x86)\opencv\build</OpenCvBuildDir>
+    <OpenCvIncludeDir Condition="'$(OpenCvIncludeDir)'=='' and '$(OpenCvBuildDir)'!=''">$(OpenCvBuildDir)\include</OpenCvIncludeDir>
+    <OpenCvLibDir Condition="'$(OpenCvLibDir)'=='' and Exists('$(OpenCvBuildDir)\\x64\\vc17\\lib')">$(OpenCvBuildDir)\x64\vc17\lib</OpenCvLibDir>
+    <OpenCvLibDir Condition="'$(OpenCvLibDir)'=='' and Exists('$(OpenCvBuildDir)\\x64\\vc16\\lib')">$(OpenCvBuildDir)\x64\vc16\lib</OpenCvLibDir>
+    <OpenCvWorldLibDebug Condition="'$(OpenCvWorldLibDebug)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4120d.lib')">opencv_world4120d.lib</OpenCvWorldLibDebug>
+    <OpenCvWorldLibDebug Condition="'$(OpenCvWorldLibDebug)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4110d.lib')">opencv_world4110d.lib</OpenCvWorldLibDebug>
+    <OpenCvWorldLibRelease Condition="'$(OpenCvWorldLibRelease)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4120.lib')">opencv_world4120.lib</OpenCvWorldLibRelease>
+    <OpenCvWorldLibRelease Condition="'$(OpenCvWorldLibRelease)'=='' and Exists('$(OpenCvLibDir)\\opencv_world4110.lib')">opencv_world4110.lib</OpenCvWorldLibRelease>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ManagedAssembly>
     </ManagedAssembly>
@@ -113,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenCvIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -122,8 +135,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\opencv\build\x64\vc16\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4110d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OpenCvLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OpenCvWorldLibDebug);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,18 +147,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenCvIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <CompileAsManaged>false</CompileAsManaged>
-      <ExceptionHandling>Async</ExceptionHandling>
+      
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4110.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OpenCvLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OpenCvWorldLibRelease);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

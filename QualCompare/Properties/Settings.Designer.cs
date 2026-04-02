@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CompareMetrics.Properties {
+namespace QualCompare.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -144,3 +144,4 @@ namespace CompareMetrics.Properties {
         }
     }
 }
+

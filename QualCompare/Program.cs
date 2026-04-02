@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Windows;
 using PatchifyLib;
 
-namespace CompareMetrics
+namespace QualCompare
 {
     public class Program
     {
@@ -15,3 +15,4 @@ namespace CompareMetrics
         }
     }
 }
+

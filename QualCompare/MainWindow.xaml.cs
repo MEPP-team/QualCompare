@@ -1,4 +1,4 @@
-using Microsoft.SqlServer.Server;
+﻿using Microsoft.SqlServer.Server;
 using PatchifyLib;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ using WpfControls = System.Windows.Controls; // Alias pour WPF Controls
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Drawing;
-namespace CompareMetrics
+namespace QualCompare
 {
     public partial class MainWindow : Window
     {
@@ -28,17 +28,16 @@ namespace CompareMetrics
         
         public sealed class AppConfig
         {
-            public string BlenderPath { get; set; } = @"C:\Program Files\Blender Foundation\Blender 4.4\blender.exe";
-            public string RenderScriptPath { get; set; } = @"D:\These\Projets\obj2png\render_single.py"; // TO PUT ON SSD ????
-            //public string RenderScriptPath { get; set; } = @"D:/These/Projets/obj2png/render_with_csv_transforms.py"; // TO PUT ON SSD ????
-            public string TempInputRoot { get; set; } = @"C:\Windows\Temp\CompareMetrics\in";
-            public string TempOutputRoot { get; set; } = @"C:\Windows\Temp\CompareMetrics\out";
-            public string ModelCsvFilePath { get; set; } = @"D:\These\Projets\obj2png\Models_characteristics_and_settings.csv"; // TO PUT ON SSD ????
+            public string BlenderPath { get; set; }
+            public string RenderScriptPath { get; set; }
+            public string TempInputRoot { get; set; }
+            public string TempOutputRoot { get; set; }
+            public string ModelCsvFilePath { get; set; }
             public string DefaultImageExt { get; set; } = "png";      // jpg|png pour --ext
             public int MaxParallelism { get; set; } = 0;           // 0 => CPU/4 (fallback)
             public bool PrefetchToSSD { get; set; } = true;         // copie OBJ+textures sur SSD
             public string UpAxis { get; set; } = "Y"; // X, Y, Z but Y default
-            public string DefaultOutputRoot { get; set; } = @"D:\These\Projets\CompareMetrics\out";
+            public string DefaultOutputRoot { get; set; }
             public string RenderFamilyName { get; set; } = "New_Render";
 
             // ---- Blender rendering parameters ----
@@ -67,7 +66,124 @@ namespace CompareMetrics
         private string ConfigPath =>
             System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "CompareMetrics", "settings.json");
+                "QualCompare", "settings.json");
+
+        private static string ApplicationRootPath =>
+            AppDomain.CurrentDomain.BaseDirectory;
+
+        private static string ResolveBundledFile(params string[] relativeSegments)
+        {
+            try
+            {
+                var candidate = System.IO.Path.Combine(new[] { ApplicationRootPath }.Concat(relativeSegments).ToArray());
+                return File.Exists(candidate) ? candidate : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string DetectBundledRenderScriptPath()
+        {
+            return ResolveBundledFile("scripts", "render_single.py")
+                ?? ResolveBundledFile("obj2png", "render_single.py")
+                ?? ResolveBundledFile("render_single.py");
+        }
+
+        private static string DetectBundledModelCsvPath()
+        {
+            return ResolveBundledFile("resources", "Models_characteristics_and_settings.csv")
+                ?? ResolveBundledFile("obj2png", "Models_characteristics_and_settings.csv")
+                ?? ResolveBundledFile("Models_characteristics_and_settings.csv");
+        }
+
+        private static string DetectInstalledBlenderPath()
+        {
+            try
+            {
+                string[] roots =
+                {
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                };
+
+                foreach (var root in roots.Where(r => !string.IsNullOrWhiteSpace(r) && Directory.Exists(r)))
+                {
+                    var blenderFoundation = System.IO.Path.Combine(root, "Blender Foundation");
+                    if (!Directory.Exists(blenderFoundation)) continue;
+
+                    var candidates = Directory.GetDirectories(blenderFoundation, "Blender *")
+                        .Select(dir => System.IO.Path.Combine(dir, "blender.exe"))
+                        .Where(File.Exists)
+                        .OrderByDescending(p => p, StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    if (candidates.Count > 0)
+                        return candidates[0];
+                }
+            }
+            catch { }
+
+            return @"C:\Program Files\Blender Foundation\Blender 4.4\blender.exe";
+        }
+
+        private static string GetDefaultTempInputRoot()
+        {
+            return System.IO.Path.Combine(System.IO.Path.GetTempPath(), "QualCompare", "in");
+        }
+
+        private static string GetDefaultTempOutputRoot()
+        {
+            return System.IO.Path.Combine(System.IO.Path.GetTempPath(), "QualCompare", "out");
+        }
+
+        private static string GetDefaultOutputRoot()
+        {
+            return System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "QualCompare",
+                "out");
+        }
+
+        private AppConfig ApplyDefaultPaths(AppConfig cfg)
+        {
+            if (cfg == null) cfg = new AppConfig();
+
+            if (string.IsNullOrWhiteSpace(cfg.BlenderPath))
+                cfg.BlenderPath = DetectInstalledBlenderPath();
+
+            if (string.IsNullOrWhiteSpace(cfg.RenderScriptPath) || !File.Exists(cfg.RenderScriptPath))
+            {
+                var bundledScript = DetectBundledRenderScriptPath();
+                if (!string.IsNullOrWhiteSpace(bundledScript))
+                    cfg.RenderScriptPath = bundledScript;
+            }
+
+            if (string.IsNullOrWhiteSpace(cfg.TempInputRoot))
+                cfg.TempInputRoot = GetDefaultTempInputRoot();
+
+            if (string.IsNullOrWhiteSpace(cfg.TempOutputRoot))
+                cfg.TempOutputRoot = GetDefaultTempOutputRoot();
+
+            if (string.IsNullOrWhiteSpace(cfg.ModelCsvFilePath) || !File.Exists(cfg.ModelCsvFilePath))
+            {
+                var bundledCsv = DetectBundledModelCsvPath();
+                if (!string.IsNullOrWhiteSpace(bundledCsv))
+                    cfg.ModelCsvFilePath = bundledCsv;
+            }
+
+            if (string.IsNullOrWhiteSpace(cfg.DefaultOutputRoot))
+                cfg.DefaultOutputRoot = GetDefaultOutputRoot();
+
+            if (string.IsNullOrWhiteSpace(cfg.RenderFamilyName))
+                cfg.RenderFamilyName = "New_Render";
+
+            cfg.UpAxis = NormalizeUpAxis(cfg.UpAxis);
+            cfg.BackgroundColorHex = NormalizeHexColor(cfg.BackgroundColorHex);
+
+            return cfg;
+        }
 
         private AppConfig LoadConfig()
         {
@@ -79,16 +195,71 @@ namespace CompareMetrics
                 {
                     var json = File.ReadAllText(ConfigPath);
                     var cfg = JsonConvert.DeserializeObject<AppConfig>(json);
-                    if (cfg != null)
-                    {
-                        cfg.UpAxis = NormalizeUpAxis(cfg.UpAxis);
-                        cfg.BackgroundColorHex = NormalizeHexColor(cfg.BackgroundColorHex);
-                        return cfg;
-                    }
+                    return ApplyDefaultPaths(cfg);
                 }
             }
             catch { }
-            return new AppConfig();
+            return ApplyDefaultPaths(new AppConfig());
+        }
+
+        private bool HasPersistedConfig()
+        {
+            return File.Exists(ConfigPath);
+        }
+
+        private static bool IsExistingFilePath(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) && File.Exists(path);
+        }
+
+        private void EnsureFirstRunConfiguration()
+        {
+            bool hadPersistedConfig = HasPersistedConfig();
+            bool shouldPersist = !hadPersistedConfig;
+
+            Config = ApplyDefaultPaths(Config);
+
+            if (!hadPersistedConfig)
+                shouldPersist = true;
+
+            if (shouldPersist)
+                SaveConfig();
+
+            var issues = new List<string>();
+
+            if (!IsExistingFilePath(Config.BlenderPath))
+                issues.Add("- Blender executable not found. Please select blender.exe in Settings.");
+
+            if (!IsExistingFilePath(Config.RenderScriptPath))
+                issues.Add("- Render script not found in the application layout.");
+
+            if (issues.Count == 0)
+            {
+                if (!hadPersistedConfig)
+                {
+                    MessageBox.Show(
+                        "QualCompare initial configuration has been created automatically.",
+                        "QualCompare setup",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                return;
+            }
+
+            var message = string.Join(Environment.NewLine, issues);
+
+            if (!hadPersistedConfig)
+            {
+                message = "QualCompare created its initial configuration, but some required paths still need attention."
+                    + Environment.NewLine + Environment.NewLine + message;
+            }
+            else
+            {
+                message = "Some required paths are currently missing or invalid."
+                    + Environment.NewLine + Environment.NewLine + message;
+            }
+
+            MessageBox.Show(message, "QualCompare setup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void SaveConfig()
@@ -279,7 +450,7 @@ namespace CompareMetrics
             if (Config != null)
                 return Math.Abs(Config.FilterSize) < 1e-6;
 
-            // 3) Démarrage à froid (pas de UI ni de Config) → considérer AA comme actif
+            // 3) Démarrage à froid (pas de UI ni de Config) ? considérer AA comme actif
             return false;
         }
 
@@ -472,7 +643,7 @@ namespace CompareMetrics
             // Racine et famille de rendu depuis Config
             string root = (Config != null && !string.IsNullOrWhiteSpace(Config.DefaultOutputRoot))
                           ? Config.DefaultOutputRoot
-                          : @"D:\These\Projets\CompareMetrics\out";
+                          : @"D:\These\Projets\QualCompare\out";
             string family = (Config != null && !string.IsNullOrWhiteSpace(Config.RenderFamilyName))
                             ? Config.RenderFamilyName
                             : "New_Render";
@@ -681,13 +852,13 @@ namespace CompareMetrics
                 string t = text.Trim().Trim('"');
 
                 if (Directory.Exists(t)) return t;                 // un dossier
-                if (File.Exists(t))                                 // un fichier → dossier parent
+                if (File.Exists(t))                                 // un fichier ? dossier parent
                 {
                     string d = Path.GetDirectoryName(t);
                     if (!string.IsNullOrEmpty(d) && Directory.Exists(d)) return d;
                 }
 
-                // peut-être un chemin de fichier non créé → tenter son parent
+                // peut-être un chemin de fichier non créé ? tenter son parent
                 string maybeParent = Path.GetDirectoryName(t);
                 if (!string.IsNullOrEmpty(maybeParent) && Directory.Exists(maybeParent)) return maybeParent;
             }
@@ -924,7 +1095,7 @@ namespace CompareMetrics
             {
                 string root = (Config != null && !string.IsNullOrWhiteSpace(Config.TempOutputRoot))
                               ? Config.TempOutputRoot
-                              : System.IO.Path.Combine(System.IO.Path.GetTempPath(), "CompareMetrics");
+                              : System.IO.Path.Combine(System.IO.Path.GetTempPath(), "QualCompare");
                 string dir = System.IO.Path.Combine(root, "logs", "patchify");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 string path = System.IO.Path.Combine(dir, "patchify_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".log");
@@ -1050,7 +1221,7 @@ namespace CompareMetrics
             var dlg = new System.Windows.Forms.FolderBrowserDialog();
             try
             {
-                dlg.SelectedPath = startDir; // .NET Fx: pas d'InitialDirectory → SelectedPath
+                dlg.SelectedPath = startDir; // .NET Fx: pas d'InitialDirectory ? SelectedPath
                 if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK && tb != null)
                     tb.Text = dlg.SelectedPath;
             }
@@ -1147,3 +1318,4 @@ namespace CompareMetrics
         }
     }
 }
+
