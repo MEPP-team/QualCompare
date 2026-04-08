@@ -213,6 +213,15 @@ If you just want to confirm that the software works:
 
 ---
 
+## Related workflows
+
+If you need the exact bridge between QualCompare and Graphics-LPIPS-QualCompare, or a step-by-step reproduction protocol for the paper workflow, see:
+
+- [docs/graphics_lpips_bridge.md](docs/graphics_lpips_bridge.md)
+- [docs/qomex_reproduction.md](docs/qomex_reproduction.md)
+
+---
+
 ## Step-by-step rendering guide
 
 ## 1. Select the input folder
