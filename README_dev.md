@@ -303,7 +303,7 @@ See `QualCompareCLI/README.md` for detailed schema documentation.
 **Intentional differences:**
 - CLI is single-shot; no queue persistence across runs
 - No SSD staging in Phase 1 (renders directly to output directory)
-- No parallelism in Phase 1 (sequential object rendering)
+- Parallelism uses `maxParallelism` from config (`0` => `CPU/4` fallback)
 - No patchify integration in Phase 1 (rendering only)
 
 **Future enhancements (Phase 2/3):**
@@ -323,6 +323,25 @@ See `QualCompareCLI/README.md` for detailed schema documentation.
    qualcompare-cli --config test_config.json --verbose
    ```
 4. Verify output appears in the configured output directory with expected `views/` and `masks/` layout.
+
+### First-time Linux/WSL dependency check (`cv2`)
+
+On a fresh Linux/WSL environment, install OpenCV and NumPy in Blender's Python before running larger jobs:
+
+```bash
+# Discover Blender's embedded Python
+BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + sys.executable)" 2>/dev/null | sed -n 's/^PY_EXE=//p' | head -n 1)
+
+# Install required Python packages inside Blender runtime
+"$BLENDER_PY" -m ensurepip --upgrade
+"$BLENDER_PY" -m pip install --upgrade pip
+"$BLENDER_PY" -m pip install opencv-python numpy
+
+# Verify imports through Blender
+blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__version__)"
+```
+
+If this check fails, rendering will fail with `ModuleNotFoundError: No module named 'cv2'`.
 
 ### Integration points
 

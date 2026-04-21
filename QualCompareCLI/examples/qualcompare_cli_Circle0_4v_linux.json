@@ -1,16 +1,16 @@
 {
   "schemaVersion": "1.0",
-  "blenderPath": "C:\\Program Files\\Blender Foundation\\Blender 4.4\\blender.exe",
-  "renderScriptPath": "C:\\path\\to\\QualCompare-public\\obj2png\\render_single.py",
-  "inputDir": "D:\\Datasets\\MyPointClouds",
-  "outputDir": "D:\\Outputs\\PointCloudRenders",
-  "objType": "ply",
-  "fileType": "everything",
-  "positionsType": "polyedric",
-  "nbViews": 12,
+  "blenderPath": "/usr/bin/blender",
+  "renderScriptPath": "/path/to/QualCompare-public/obj2png/render_single.py",
+  "inputDir": "/data/dataset/source",
+  "outputDir": "/data/output/yfixed_4views",
+  "objType": "obj",
+  "fileType": "source",
+  "ext": "png",
+  "positionsType": "yfixed",
+  "nbViews": 4,
   "yPos": 0.0,
   "upAxis": "Y",
-  "ext": "png",
   "render": {
     "resX": 650,
     "resY": 550,
@@ -24,7 +24,7 @@
     "bgColor": "#34322C"
   },
   "ply": {
-    "mode": "voxel",
+    "mode": "sphere",
     "pointRadiusFraction": 0.003,
     "voxelBits": 12,
     "voxelRadiusMultiplier": 1.2

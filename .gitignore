@@ -16,4 +16,6 @@
 *.pch
 *.tlog
 *.dll
+__pycache__/
+*.pyc
 

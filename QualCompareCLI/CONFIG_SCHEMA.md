@@ -113,7 +113,7 @@ Complete reference for render job configuration in JSON format.
 #### `maxParallelism`
 - **Type:** number (integer)
 - **Default:** `0` (means CPU count / 4)
-- **Description:** Maximum parallel jobs (Phase 1 is always sequential)
+- **Description:** Maximum parallel Blender jobs (`0` uses `CPU/4` fallback)
 
 #### `prefetchToSSD`
 - **Type:** boolean

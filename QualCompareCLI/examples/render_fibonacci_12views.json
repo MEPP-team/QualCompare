@@ -14,7 +14,7 @@
   "render": {
     "resX": 650,
     "resY": 550,
-    "engine": "BLENDER_EEVEE_NEXT",
+    "engine": "BLENDER_EEVEE",
     "taa": 64,
     "filterSize": 1.5,
     "maskThreshold": 10,

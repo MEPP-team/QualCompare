@@ -186,4 +186,37 @@ When a validation step fails, record:
 
 This should be logged before changing code so that installer regressions remain reproducible.
 
+---
+
+## Linux/WSL CLI first-run validation
+
+When validating the cross-platform CLI (`QualCompareCLI`) on a fresh Linux/WSL environment, run this additional checklist to avoid first-run dependency failures:
+
+1. confirm Blender is installed and callable (`blender --version`)
+1. discover Blender Python path:
+
+```bash
+BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + sys.executable)" 2>/dev/null | sed -n 's/^PY_EXE=//p' | head -n 1)
+```
+
+1. bootstrap pip and install required packages in Blender Python:
+
+```bash
+"$BLENDER_PY" -m ensurepip --upgrade
+"$BLENDER_PY" -m pip install --upgrade pip
+"$BLENDER_PY" -m pip install opencv-python numpy
+```
+
+1. verify imports from Blender runtime:
+
+```bash
+blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__version__)"
+```
+
+1. run one CLI smoke test with `--verbose` and confirm `views/` and `masks/` outputs are generated
+
+If step 4 fails, first-run rendering will fail with `ModuleNotFoundError: No module named 'cv2'`.
+
+
+
 

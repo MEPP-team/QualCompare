@@ -19,6 +19,23 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 - Blender 4.x installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
 
+### First-time Linux/WSL setup (recommended)
+
+On a fresh Linux/WSL environment, install OpenCV and NumPy in Blender's Python before the first render.
+
+```bash
+# 1) Get Blender's Python executable path
+BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + sys.executable)" 2>/dev/null | sed -n 's/^PY_EXE=//p' | head -n 1)
+
+# 2) Bootstrap pip and install required packages
+"$BLENDER_PY" -m ensurepip --upgrade
+"$BLENDER_PY" -m pip install --upgrade pip
+"$BLENDER_PY" -m pip install opencv-python numpy
+
+# 3) Verify imports from Blender runtime
+blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__version__)"
+```
+
 ### Build commands
 
 ```bash
@@ -89,6 +106,7 @@ Create a JSON configuration file describing your render job. See `examples/` for
 | `fileType` | string | "everything" | File selection: `"everything"`, `"source"`, or `"distorted"` |
 | `positionsType` | string | "fibonacci" | Camera sampling: `"fibonacci"`, `"yfixed"`, or `"polyedric"` |
 | `nbViews` | number | 12 | Number of viewpoints to render |
+| `maxParallelism` | number | 0 | Max concurrent Blender jobs (`0` => `CPU/4`) |
 | `yPos` | number | 0.0 | Y-axis offset for `yfixed` mode |
 | `upAxis` | string | "Y" | Object up-axis: `"X"`, `"Y"`, or `"Z"` |
 | `ext` | string | "png" | Output format: `"png"` or `"jpg"` |

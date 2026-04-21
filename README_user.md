@@ -80,9 +80,11 @@ Important:
 
 ## Option 1 - Recommended: install with the Windows setup
 
-If you received a release package:
+If you are using a release package or a local clone:
 
-1. Run the QualCompare installer.
+1. Locate the installer executable:
+    - release package: setup executable delivered with the release
+    - local repository: build the installer from `installer/qualcompare.iss` (Inno Setup), then use the generated setup in `installer/output/`
 2. Follow the installation wizard.
 3. Launch QualCompare from the Start Menu or desktop shortcut.
 
@@ -94,10 +96,24 @@ If Blender is already installed, QualCompare may detect it automatically. If not
 
 If you are using a locally built version:
 
-1. Build the Visual Studio solution.
-2. Open the generated `QualCompare.exe`.
-3. On first launch, let the application create its initial configuration.
-4. Verify that Blender and the bundled render script are correctly detected.
+1. Open `QualCompare/QualCompare.sln` in Visual Studio 2022.
+2. Select `Release | x64` (or `Debug | x64` for development).
+3. Build the full solution (Build > Build Solution).
+4. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
+5. On first launch, let the application create its initial configuration.
+6. Verify that Blender and the bundled render script are correctly detected.
+
+---
+
+## Small sample data for first test
+
+If you do not have a dataset yet, create a tiny OBJ sample for a smoke test:
+
+1. Create a folder, for example `C:\Temp\QualCompareSample\source`.
+2. Put at least one valid `.obj` model in that folder.
+3. Run a 4-view render to validate installation before testing larger datasets.
+
+This keeps first-run checks fast and helps isolate setup issues.
 
 ---
 
@@ -453,6 +469,19 @@ What to do:
 - verify that rendering completed successfully first
 - confirm that `views/` and `masks/` exist for the object
 - confirm filenames follow the expected `view_N` and `mask_N` pattern
+
+## Patchify wrapper DLL cannot be loaded
+
+Symptoms:
+
+- error while executing DLL mentioning `PatchifyWrapper.dll`
+
+What to do:
+
+- use the official installer when possible (it packages native dependencies)
+- if you use a development build, build the full solution in `x64` and ensure `PatchifyWrapper.dll` is present next to `QualCompare.exe`
+- install/update Microsoft Visual C++ Redistributable (x64)
+- restart the application after dependency updates
 
 ---
 
