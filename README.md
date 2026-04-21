@@ -1,10 +1,6 @@
-# README.md
-
 # QualCompare
 
-QualCompare is a Windows desktop application for reproducible multi-view rendering of 3D objects and patch extraction for perceptual quality assessment workflows.
-
-It was developed in a research context to help generate controlled rendered datasets from `.obj` meshes and `.ply` point clouds, with stable output folders for downstream experiments.
+QualCompare is a Windows desktop application for reproducible multi-view rendering of 3D objects and patch extraction workflows used in perceptual quality assessment research.
 
 ## Start here
 

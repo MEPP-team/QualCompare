@@ -1,5 +1,3 @@
-# README_user.md
-
 # QualCompare
 
 QualCompare is a Windows desktop application used to render reproducible multi-view images of 3D objects and generate image patches for perceptual quality assessment workflows.
@@ -31,8 +29,8 @@ object_name/
     masks/
 ```
 
-9. Open the Patchify area and run patch extraction on one rendered image or folder.
-10. Confirm that patch CSV output is created.
+1. Open the Patchify area and run patch extraction on one rendered image or folder.
+1. Confirm that patch CSV output is created.
 
 If this quick test works, the application is ready for larger datasets and longer experiments.
 
@@ -214,116 +212,12 @@ The current source/distorted detection is heuristic and based on folder names su
 
 ---
 
-## Quick start
-
-If you just want to confirm that the software works:
-
-1. Install Blender.
-2. Launch QualCompare.
-3. Set the Blender path if needed.
-4. Choose a small input dataset.
-5. Choose an output folder.
-6. Render a few views of one OBJ file.
-7. Check that both `views` and `masks` were created.
-8. Run Patchify on the result.
-
----
-
 ## Related workflows
 
 If you need the exact bridge between QualCompare and Graphics-LPIPS-QualCompare, or a step-by-step reproduction protocol for the paper workflow, see:
 
 - [docs/graphics_lpips_bridge.md](docs/graphics_lpips_bridge.md)
 - [docs/qomex_reproduction.md](docs/qomex_reproduction.md)
-
----
-
-## Step-by-step rendering guide
-
-## 1. Select the input folder
-
-Choose the folder that contains the 3D objects you want to process.
-
-The application will search recursively for files matching the selected format.
-
-## 2. Select the output folder
-
-Choose the folder where rendered images and masks should be stored.
-
-QualCompare writes results per object, so the chosen output folder should have enough free disk space.
-
-## 3. Choose the file format
-
-Select the object type you want to render:
-
-- `obj`
-- `ply`
-
-## 4. Choose which files to process
-
-Available modes:
-
-- `everything`
-- `source`
-- `distorted`
-
-Use `everything` if you are unsure whether the dataset folder names follow the expected conventions.
-
-## 5. Choose the view generation method
-
-### Fibonacci
-
-Uses a spherical distribution of views.
-
-Best for:
-
-- broad coverage of object appearance
-- unbiased multi-view evaluation
-
-### Y-fixed
-
-Moves the camera around the object at a fixed height.
-
-Best for:
-
-- human-facing experiments
-- circular observation protocols
-
-### Polyhedral
-
-Uses predefined camera positions on regular polyhedra.
-
-Available view counts:
-
-| Shape | Views |
-| --- | --- |
-| Tetrahedron | 4 |
-| Octahedron | 6 |
-| Cube | 8 |
-| Icosahedron | 12 |
-| Dodecahedron | 20 |
-
-## 6. Set the number of views
-
-Enter the number of views you want to generate.
-
-Notes:
-
-- Fibonacci and Y-fixed accept user-defined view counts.
-- Polyhedral uses predefined counts only.
-- More views mean more rendering time and more disk usage.
-
-## 7. Start rendering
-
-Click the render button.
-
-The application will then:
-
-1. copy each object to a temporary SSD-friendly cache
-2. launch Blender in background mode
-3. generate rendered views
-4. generate binary masks
-5. copy final outputs to the selected output folder
 
 ---
 

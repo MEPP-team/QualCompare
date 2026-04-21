@@ -1,5 +1,3 @@
-# README_dev.md
-
 # QualCompare Developer Guide
 
 ## Purpose and research constraints
@@ -227,128 +225,14 @@ object_name/masks/mask_N.png
 - Preserve the current Python CLI spelling `polyedric`. Older docs may say `polyhedral`, but the active parser and WPF command building depend on `polyedric`.
 - Preserve current Blender invocation style and output copy-back behavior unless the full downstream workflow is revalidated.
 
-## Cross-platform CLI (QualCompareCLI) - Phase 1
+## Cross-platform CLI (QualCompareCLI)
 
-### Overview
+The `QualCompareCLI` project provides cross-platform batch rendering without UI and reuses the same Blender argument contract as the WPF app.
 
-The **QualCompareCLI** project (`.NET 8`) provides cross-platform batch rendering without a graphical interface. It reads a JSON configuration file and executes the same Blender rendering pipeline as the WPF GUI, supporting Windows, Linux, and macOS.
+For usage, schema, Linux/WSL setup, and troubleshooting, use the canonical documentation:
 
-**Key characteristics:**
-- Built with .NET 8 (works on any platform with .NET 8 SDK)
-- No GUI dependency; configuration via JSON files
-- Identical rendering output as WPF version (same Blender arguments)
-- Suitable for automation, scripting, and continuous integration workflows
-
-### Building the CLI
-
-```bash
-# Navigate to CLI project
-cd QualCompareCLI
-
-# Restore and build
-dotnet build
-
-# Build release binary
-dotnet publish -c Release -o ./bin/release
-```
-
-The output binary will be:
-- `qualcompare-cli` (Linux/macOS)
-- `qualcompare-cli.exe` (Windows)
-
-### Using the CLI
-
-```bash
-# Basic usage
-qualcompare-cli --config render_job.json
-
-# With verbose logging
-qualcompare-cli --config render_job.json --verbose
-
-# Help
-qualcompare-cli --help
-```
-
-### Configuration JSON
-
-The CLI consumes a JSON configuration file. See `QualCompareCLI/examples/` for templates.
-
-**Example structure:**
-```json
-{
-  "schemaVersion": "1.0",
-  "blenderPath": "/usr/bin/blender",
-  "renderScriptPath": "/path/to/render_single.py",
-  "inputDir": "/data/models",
-  "outputDir": "/data/output",
-  "objType": "obj",
-  "fileType": "everything",
-  "positionsType": "fibonacci",
-  "nbViews": 12,
-  "render": { ... },
-  "ply": { ... }
-}
-```
-
-See `QualCompareCLI/README.md` for detailed schema documentation.
-
-### Design notes
-
-**Reused from WPF:**
-- Blender command construction logic (from `RenderQueue.cs`)
-- Argument names and values (from `render_single.py` parser)
-- Output directory structure (views/ + masks/)
-- File filtering heuristic (source/distorted detection)
-
-**Intentional differences:**
-- CLI is single-shot; no queue persistence across runs
-- No SSD staging in Phase 1 (renders directly to output directory)
-- Parallelism uses `maxParallelism` from config (`0` => `CPU/4` fallback)
-- No patchify integration in Phase 1 (rendering only)
-
-**Future enhancements (Phase 2/3):**
-- Configuration validation and schema versioning
-- Patchify integration via CLI or library call
-- GUI export to JSON (allows GUI to create CLI configs)
-- Parallel rendering with staging paths
-
-### Testing the CLI
-
-**Minimal smoke test:**
-
-1. Create a test configuration JSON with a small dataset.
-2. Ensure `blenderPath` and `renderScriptPath` are correct for your platform.
-3. Run:
-   ```bash
-   qualcompare-cli --config test_config.json --verbose
-   ```
-4. Verify output appears in the configured output directory with expected `views/` and `masks/` layout.
-
-### First-time Linux/WSL dependency check (`cv2`)
-
-On a fresh Linux/WSL environment, install OpenCV and NumPy in Blender's Python before running larger jobs:
-
-```bash
-# Discover Blender's embedded Python
-BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + sys.executable)" 2>/dev/null | sed -n 's/^PY_EXE=//p' | head -n 1)
-
-# Install required Python packages inside Blender runtime
-"$BLENDER_PY" -m ensurepip --upgrade
-"$BLENDER_PY" -m pip install --upgrade pip
-"$BLENDER_PY" -m pip install opencv-python numpy
-
-# Verify imports through Blender
-blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__version__)"
-```
-
-If this check fails, rendering will fail with `ModuleNotFoundError: No module named 'cv2'`.
-
-### Integration points
-
-**For future GUI integration:**
-- WPF can export current settings to JSON via a button
-- CLI and WPF would share the same `RenderConfig` schema (via common definition or code generation)
-- This ensures configuration parity between GUI and CLI workflows
+- `QualCompareCLI/README.md`
+- `QualCompareCLI/CONFIG_SCHEMA.md`
 
 ## Practical contributor workflows
 

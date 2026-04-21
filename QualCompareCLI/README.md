@@ -119,7 +119,7 @@ The `render` object controls Blender rendering:
 "render": {
   "resX": 650,
   "resY": 550,
-  "engine": "BLENDER_EEVEE_NEXT",
+  "engine": "BLENDER_EEVEE",
   "taa": 64,
   "filterSize": 1.5,
   "maskThreshold": 10,
@@ -134,7 +134,7 @@ The `render` object controls Blender rendering:
 |----------|------|---------|-------------|
 | `resX` | number | 650 | Horizontal resolution (pixels) |
 | `resY` | number | 550 | Vertical resolution (pixels) |
-| `engine` | string | "BLENDER_EEVEE_NEXT" | Render engine |
+| `engine` | string | "BLENDER_EEVEE" | Render engine |
 | `taa` | number | 64 | Temporal anti-aliasing samples |
 | `filterSize` | number | 1.5 | Pixel filter size |
 | `maskThreshold` | number | 10 | Binary mask threshold (0-255) |
@@ -248,10 +248,8 @@ The GUI (Windows WPF) can export its current settings as a JSON configuration fi
 - **Service**: See `BlenderRenderService.cs` for Blender process execution logic
 - **Logging**: See `Logger.cs` for console output implementation
 
-## Future enhancements (Phase 2 & 3)
+## Future enhancements
 
-- GUI export to JSON
-- Configuration validation with detailed error messages
-- Parallel object rendering with SSD staging
-- Patchify integration (currently Phase 1 focuses on rendering only)
-- Configuration schema versioning and migration
+- richer configuration validation and diagnostics
+- optional patchify integration
+- schema evolution/version migration support
