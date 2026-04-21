@@ -40,6 +40,9 @@ When editing the project, assume that output layout, Blender command-line argume
 - `docs/`
   Maintained technical documentation covering architecture, datasets, rendering, installer validation, known issues, release process, and short-term priorities.
 
+- `QualCompareCLI/`
+  **NEW**: Cross-platform .NET 8 console application for batch rendering without UI. Reads JSON configuration files and executes rendering on Windows, Linux, or macOS. Enables automation and scripting workflows. See `QualCompareCLI/README.md` for usage.
+
 Historical naming still exists internally. The product name is now `QualCompare`, but older names remain in some solution-level identifiers, namespaces, paths, comments, and documentation fragments. Treat those as technical debt rather than a reason to rename things aggressively.
 
 ## Architecture and design choices
@@ -224,7 +227,132 @@ object_name/masks/mask_N.png
 - Preserve the current Python CLI spelling `polyedric`. Older docs may say `polyhedral`, but the active parser and WPF command building depend on `polyedric`.
 - Preserve current Blender invocation style and output copy-back behavior unless the full downstream workflow is revalidated.
 
+## Cross-platform CLI (QualCompareCLI) - Phase 1
+
+### Overview
+
+The **QualCompareCLI** project (`.NET 8`) provides cross-platform batch rendering without a graphical interface. It reads a JSON configuration file and executes the same Blender rendering pipeline as the WPF GUI, supporting Windows, Linux, and macOS.
+
+**Key characteristics:**
+- Built with .NET 8 (works on any platform with .NET 8 SDK)
+- No GUI dependency; configuration via JSON files
+- Identical rendering output as WPF version (same Blender arguments)
+- Suitable for automation, scripting, and continuous integration workflows
+
+### Building the CLI
+
+```bash
+# Navigate to CLI project
+cd QualCompareCLI
+
+# Restore and build
+dotnet build
+
+# Build release binary
+dotnet publish -c Release -o ./bin/release
+```
+
+The output binary will be:
+- `qualcompare-cli` (Linux/macOS)
+- `qualcompare-cli.exe` (Windows)
+
+### Using the CLI
+
+```bash
+# Basic usage
+qualcompare-cli --config render_job.json
+
+# With verbose logging
+qualcompare-cli --config render_job.json --verbose
+
+# Help
+qualcompare-cli --help
+```
+
+### Configuration JSON
+
+The CLI consumes a JSON configuration file. See `QualCompareCLI/examples/` for templates.
+
+**Example structure:**
+```json
+{
+  "schemaVersion": "1.0",
+  "blenderPath": "/usr/bin/blender",
+  "renderScriptPath": "/path/to/render_single.py",
+  "inputDir": "/data/models",
+  "outputDir": "/data/output",
+  "objType": "obj",
+  "fileType": "everything",
+  "positionsType": "fibonacci",
+  "nbViews": 12,
+  "render": { ... },
+  "ply": { ... }
+}
+```
+
+See `QualCompareCLI/README.md` for detailed schema documentation.
+
+### Design notes
+
+**Reused from WPF:**
+- Blender command construction logic (from `RenderQueue.cs`)
+- Argument names and values (from `render_single.py` parser)
+- Output directory structure (views/ + masks/)
+- File filtering heuristic (source/distorted detection)
+
+**Intentional differences:**
+- CLI is single-shot; no queue persistence across runs
+- No SSD staging in Phase 1 (renders directly to output directory)
+- No parallelism in Phase 1 (sequential object rendering)
+- No patchify integration in Phase 1 (rendering only)
+
+**Future enhancements (Phase 2/3):**
+- Configuration validation and schema versioning
+- Patchify integration via CLI or library call
+- GUI export to JSON (allows GUI to create CLI configs)
+- Parallel rendering with staging paths
+
+### Testing the CLI
+
+**Minimal smoke test:**
+
+1. Create a test configuration JSON with a small dataset.
+2. Ensure `blenderPath` and `renderScriptPath` are correct for your platform.
+3. Run:
+   ```bash
+   qualcompare-cli --config test_config.json --verbose
+   ```
+4. Verify output appears in the configured output directory with expected `views/` and `masks/` layout.
+
+### Integration points
+
+**For future GUI integration:**
+- WPF can export current settings to JSON via a button
+- CLI and WPF would share the same `RenderConfig` schema (via common definition or code generation)
+- This ensures configuration parity between GUI and CLI workflows
+
 ## Practical contributor workflows
+
+### Working on CLI
+
+Primary area:
+
+- `QualCompareCLI/`
+
+Main files:
+
+- `Program.cs` - CLI entry point and argument parsing
+- `RenderConfig.cs` - JSON configuration schema
+- `BlenderRenderService.cs` - Blender process execution
+
+Main tasks:
+
+- Adding configuration options
+- Improving error messages
+- Adding validation logic
+- Handling edge cases
+
+**Important:** Keep argument construction in sync with `RenderQueue.cs`. If you change Blender arguments, update both locations.
 
 ### Working on WPF and UI behavior
 

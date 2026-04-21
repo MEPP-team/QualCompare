@@ -62,6 +62,106 @@ namespace QualCompare
             public double PatchOverlapThreshold { get; set; } = 0.65;
         }
 
+        // Phase 2: JSON export model consumed by QualCompareCLI.
+        public sealed class CliExportConfig
+        {
+            [JsonProperty("schemaVersion")]
+            public string SchemaVersion { get; set; } = "1.0";
+
+            [JsonProperty("blenderPath")]
+            public string BlenderPath { get; set; }
+
+            [JsonProperty("renderScriptPath")]
+            public string RenderScriptPath { get; set; }
+
+            [JsonProperty("inputDir")]
+            public string InputDir { get; set; }
+
+            [JsonProperty("outputDir")]
+            public string OutputDir { get; set; }
+
+            [JsonProperty("objType")]
+            public string ObjType { get; set; }
+
+            [JsonProperty("fileType")]
+            public string FileType { get; set; }
+
+            [JsonProperty("ext")]
+            public string Extension { get; set; }
+
+            [JsonProperty("positionsType")]
+            public string PositionsType { get; set; }
+
+            [JsonProperty("nbViews")]
+            public int NbViews { get; set; }
+
+            [JsonProperty("yPos")]
+            public double YPos { get; set; }
+
+            [JsonProperty("upAxis")]
+            public string UpAxis { get; set; }
+
+            [JsonProperty("render")]
+            public CliExportRenderParams Render { get; set; }
+
+            [JsonProperty("ply")]
+            public CliExportPlyParams Ply { get; set; }
+
+            [JsonProperty("maxParallelism")]
+            public int MaxParallelism { get; set; }
+
+            [JsonProperty("prefetchToSSD")]
+            public bool PrefetchToSSD { get; set; }
+        }
+
+        public sealed class CliExportRenderParams
+        {
+            [JsonProperty("resX")]
+            public int ResX { get; set; }
+
+            [JsonProperty("resY")]
+            public int ResY { get; set; }
+
+            [JsonProperty("engine")]
+            public string Engine { get; set; }
+
+            [JsonProperty("taa")]
+            public int Taa { get; set; }
+
+            [JsonProperty("filterSize")]
+            public double FilterSize { get; set; }
+
+            [JsonProperty("maskThreshold")]
+            public int MaskThreshold { get; set; }
+
+            [JsonProperty("sunEnergy")]
+            public double SunEnergy { get; set; }
+
+            [JsonProperty("sunTheta")]
+            public double SunTheta { get; set; }
+
+            [JsonProperty("sunPhi")]
+            public double SunPhi { get; set; }
+
+            [JsonProperty("bgColor")]
+            public string BgColor { get; set; }
+        }
+
+        public sealed class CliExportPlyParams
+        {
+            [JsonProperty("mode")]
+            public string Mode { get; set; }
+
+            [JsonProperty("pointRadiusFraction")]
+            public double PointRadiusFraction { get; set; }
+
+            [JsonProperty("voxelBits")]
+            public int VoxelBits { get; set; }
+
+            [JsonProperty("voxelRadiusMultiplier")]
+            public double VoxelRadiusMultiplier { get; set; }
+        }
+
         private AppConfig Config;
         private string ConfigPath =>
             System.IO.Path.Combine(
@@ -1309,6 +1409,144 @@ namespace QualCompare
                 this.Config = draft;
                 SaveConfig();
                 AppendLog("Patchify parameters updated.");
+            }
+        }
+
+        private CliExportConfig BuildCliExportConfig()
+        {
+            if (Config == null) Config = LoadConfig();
+            ReadConfigFromUI();
+
+            if (!int.TryParse(NbViewsTextBox.Text, out int nbViews) || nbViews <= 0)
+                throw new InvalidOperationException("Invalid number of views.");
+
+            string[] viewingMethods = { "fibonacci", "yfixed", "polyedric" };
+            string[] fileTypes = { "everything", "source", "distorted" };
+
+            int selectedMethodIndex = Math.Max(0, MethodComboBox.SelectedIndex);
+            int selectedFileTypeIndex = Math.Max(0, comboBoxFileSelection.SelectedIndex);
+
+            string positionsType = viewingMethods[selectedMethodIndex];
+            string fileType = fileTypes[selectedFileTypeIndex];
+
+            var export = new CliExportConfig
+            {
+                BlenderPath = Config.BlenderPath,
+                RenderScriptPath = Config.RenderScriptPath,
+                InputDir = ObjFilePathTextBox.Text,
+                OutputDir = OutputDirTextBox.Text,
+                ObjType = (FormatComboBox.Text ?? "obj").Trim().ToLowerInvariant(),
+                FileType = fileType,
+                Extension = (Config.DefaultImageExt ?? "png").Trim().ToLowerInvariant(),
+                PositionsType = positionsType,
+                NbViews = nbViews,
+                YPos = Math.Round(sliderHeight.Value, 2),
+                UpAxis = NormalizeUpAxis(Config.UpAxis),
+                MaxParallelism = Config.MaxParallelism,
+                PrefetchToSSD = Config.PrefetchToSSD,
+                Render = new CliExportRenderParams
+                {
+                    ResX = Config.ResolutionX,
+                    ResY = Config.ResolutionY,
+                    Engine = Config.RenderEngine,
+                    Taa = Config.TaaSamples,
+                    FilterSize = Config.FilterSize,
+                    MaskThreshold = Config.MaskThreshold,
+                    SunEnergy = Config.SunEnergy,
+                    SunTheta = Config.SunTheta,
+                    SunPhi = Config.SunPhi,
+                    BgColor = NormalizeHexColor(Config.BackgroundColorHex)
+                },
+                Ply = new CliExportPlyParams
+                {
+                    Mode = (Config.PlyRenderMode ?? "sphere").Trim().ToLowerInvariant(),
+                    PointRadiusFraction = Config.PointRadiusFraction,
+                    VoxelBits = Config.PlyVoxelBits,
+                    VoxelRadiusMultiplier = Config.VoxelRadiusMultiplier
+                }
+            };
+
+            return export;
+        }
+
+        private static List<string> ValidateCliExportConfig(CliExportConfig cfg)
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(cfg.BlenderPath) || !File.Exists(cfg.BlenderPath))
+                errors.Add("Blender path is missing or invalid.");
+
+            if (string.IsNullOrWhiteSpace(cfg.RenderScriptPath) || !File.Exists(cfg.RenderScriptPath))
+                errors.Add("Render script path is missing or invalid.");
+
+            if (string.IsNullOrWhiteSpace(cfg.InputDir) || !Directory.Exists(cfg.InputDir))
+                errors.Add("Input directory is missing or invalid.");
+
+            if (string.IsNullOrWhiteSpace(cfg.OutputDir))
+                errors.Add("Output directory is empty.");
+
+            if (cfg.NbViews <= 0)
+                errors.Add("Number of views must be strictly positive.");
+
+            if (cfg.ObjType != "obj" && cfg.ObjType != "ply")
+                errors.Add("objType must be 'obj' or 'ply'.");
+
+            if (cfg.Extension != "png" && cfg.Extension != "jpg")
+                errors.Add("ext must be 'png' or 'jpg'.");
+
+            return errors;
+        }
+
+        private void ExportCliConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var exportConfig = BuildCliExportConfig();
+                var validationErrors = ValidateCliExportConfig(exportConfig);
+                if (validationErrors.Count > 0)
+                {
+                    MessageBox.Show(
+                        "CLI export aborted due to invalid configuration:" + Environment.NewLine + Environment.NewLine
+                        + string.Join(Environment.NewLine, validationErrors.Select(v => "- " + v)),
+                        "Export CLI JSON",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                string defaultName = "qualcompare_cli_" + DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture) + ".json";
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export CLI configuration",
+                    Filter = "JSON (*.json)|*.json|All files|*.*",
+                    FileName = defaultName,
+                    AddExtension = true,
+                    DefaultExt = ".json",
+                    RestoreDirectory = true,
+                    InitialDirectory = Directory.Exists(exportConfig.OutputDir)
+                        ? exportConfig.OutputDir
+                        : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                };
+
+                if (dlg.ShowDialog() != true)
+                    return;
+
+                string json = JsonConvert.SerializeObject(exportConfig, Formatting.Indented);
+                File.WriteAllText(dlg.FileName, json);
+
+                MessageBox.Show(
+                    "CLI configuration exported successfully." + Environment.NewLine + dlg.FileName,
+                    "Export CLI JSON",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Failed to export CLI configuration: " + ex.Message,
+                    "Export CLI JSON",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
         private void sliderHeight_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

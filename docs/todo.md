@@ -4,6 +4,18 @@ This todo list reflects the current repository state and focuses on low-risk, hi
 
 ---
 
+## Cross-platform rendering (Phase 1 - COMPLETED)
+
+✓ Created QualCompareCLI .NET 8 project for cross-platform batch rendering
+✓ Implemented RenderConfig JSON schema matching WPF configuration
+✓ Implemented BlenderRenderService with Blender argument construction
+✓ Added JSON configuration file examples (Fibonacci, PLY voxel, Windows paths)
+✓ Documented CLI in QualCompareCLI/README.md and README_dev.md
+
+**Phase 1 scope:** Rendering only (no patchify), JSON configuration, cross-platform support.
+
+---
+
 ## High priority
 
 - execute and record the fresh-machine installer validation protocol in `docs/installer_validation.md`
@@ -26,6 +38,16 @@ This todo list reflects the current repository state and focuses on low-risk, hi
 - document the exact role of legacy scripts such as `render_with_csv_transforms.py`
 - improve logging around cache prefetch, Blender failures, and output copy-back
 - decide whether user-config storage under `%AppData%\QualCompare` needs an explicit migration/versioning policy
+- **Phase 2 (Cross-platform configuration unification):**
+  - [in progress] Extract render configuration to shared library (both GUI and CLI reference same schema)
+  - [done] Implement WPF button to export current settings as JSON
+  - [done] Add JSON configuration validation with detailed error messages
+  - Implement configuration schema versioning for future migrations
+- **Phase 3 (Patchify cross-platform):**
+  - Port patchify C++ to CMake (enable Linux/macOS builds)
+  - Create stable C API for patchify (replace C++/CLI dependency)
+  - Implement patchify CLI or library consumer
+  - Integrate patchify into QualCompareCLI
 
 ---
 

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "blenderPath": "C:\\Program Files\\Blender Foundation\\Blender 4.4\\blender.exe",
+  "renderScriptPath": "C:\\path\\to\\QualCompare-public\\obj2png\\render_single.py",
+  "inputDir": "D:\\Datasets\\MyPointClouds",
+  "outputDir": "D:\\Outputs\\PointCloudRenders",
+  "objType": "ply",
+  "fileType": "everything",
+  "positionsType": "polyedric",
+  "nbViews": 12,
+  "yPos": 0.0,
+  "upAxis": "Y",
+  "ext": "png",
+  "render": {
+    "resX": 650,
+    "resY": 550,
+    "engine": "BLENDER_EEVEE_NEXT",
+    "taa": 64,
+    "filterSize": 1.5,
+    "maskThreshold": 10,
+    "sunEnergy": 5.0,
+    "sunTheta": 30.0,
+    "sunPhi": 50.0,
+    "bgColor": "#34322C"
+  },
+  "ply": {
+    "mode": "voxel",
+    "pointRadiusFraction": 0.003,
+    "voxelBits": 12,
+    "voxelRadiusMultiplier": 1.2
+  },
+  "maxParallelism": 0,
+  "prefetchToSSD": true
+}

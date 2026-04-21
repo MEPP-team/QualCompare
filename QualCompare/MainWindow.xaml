@@ -26,12 +26,15 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="OpenRenderParamsButton" Padding="8,4" Click="OpenRenderParams_Click" ToolTip="Render Parameters" HorizontalAlignment="Right">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" VerticalAlignment="Center"/>
-                            <!--<TextBlock Text="Parameters"/>-->
-                        </StackPanel>
-                    </Button>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="ExportCliConfigButton" Content="Export CLI JSON" Padding="8,4" Margin="0,0,8,0" Click="ExportCliConfigButton_Click" ToolTip="Export current render settings to QualCompareCLI JSON format"/>
+                        <Button x:Name="OpenRenderParamsButton" Padding="8,4" Click="OpenRenderParams_Click" ToolTip="Render Parameters">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" VerticalAlignment="Center"/>
+                                <!--<TextBlock Text="Parameters"/>-->
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                     <Grid Name="grid2" Margin="10,25,10,0" RenderTransformOrigin="0,0.5" Panel.ZIndex="-1" MinWidth="250" Grid.RowSpan="3" VerticalAlignment="Top" UseLayoutRounding="False">
                         <Grid.RowDefinitions>
                             <RowDefinition/>

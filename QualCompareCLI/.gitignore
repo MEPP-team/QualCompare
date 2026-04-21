@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+obj/
+
+# IDE artifacts
+.vs/
+.vscode/
+*.user
+*.sln.iml
+
+# Published outputs
+publish/
+
+# Package cache
+.nuget/
+*.nuget.props
+*.nuget.targets
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+*.sln.iml

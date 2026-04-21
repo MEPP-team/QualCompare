@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "blenderPath": "/usr/bin/blender",
+  "renderScriptPath": "/path/to/QualCompare-public/obj2png/render_single.py",
+  "inputDir": "/data/dataset/models",
+  "outputDir": "/data/output/renders",
+  "objType": "obj",
+  "fileType": "everything",
+  "positionsType": "fibonacci",
+  "nbViews": 12,
+  "yPos": 0.0,
+  "upAxis": "Y",
+  "ext": "png",
+  "render": {
+    "resX": 650,
+    "resY": 550,
+    "engine": "BLENDER_EEVEE_NEXT",
+    "taa": 64,
+    "filterSize": 1.5,
+    "maskThreshold": 10,
+    "sunEnergy": 5.0,
+    "sunTheta": 30.0,
+    "sunPhi": 50.0,
+    "bgColor": "#34322C"
+  },
+  "ply": {
+    "mode": "sphere",
+    "pointRadiusFraction": 0.003,
+    "voxelBits": 10,
+    "voxelRadiusMultiplier": 1.0
+  },
+  "maxParallelism": 0,
+  "prefetchToSSD": true
+}
