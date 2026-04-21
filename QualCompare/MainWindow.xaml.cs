@@ -43,7 +43,7 @@ namespace QualCompare
             // ---- Blender rendering parameters ----
             public int ResolutionX { get; set; } = 650; // default values defined for Graphics-LPIPS
             public int ResolutionY { get; set; } = 550;
-            public string RenderEngine { get; set; } = "BLENDER_EEVEE_NEXT";
+            public string RenderEngine { get; set; } = "BLENDER_EEVEE";
             public int TaaSamples { get; set; } = 64; // temporal anti-aliasing samples
             public double FilterSize { get; set; } = 1.5; // pixel filter size
             public int MaskThreshold { get; set; } = 10;
@@ -601,30 +601,36 @@ namespace QualCompare
             e.Handled |= (e.Text == "." && text.Length == 1 && text[0] == '-');
         }
 
+        private void UpdateMethodSpecificControls()
+        {
+            if (FibonacciGrid == null || YFixedGrid == null || PolyhedronGrid == null || NbViewsTextBox == null || MethodComboBox == null)
+                return;
+
+            FibonacciGrid.Visibility = Visibility.Collapsed;
+            YFixedGrid.Visibility = Visibility.Collapsed;
+            PolyhedronGrid.Visibility = Visibility.Collapsed;
+            NbViewsTextBox.IsEnabled = true;
+
+            int selectedIndex = Math.Max(0, MethodComboBox.SelectedIndex);
+            switch (selectedIndex)
+            {
+                case 0:
+                    FibonacciGrid.Visibility = Visibility.Visible;
+                    break;
+                case 1:
+                    YFixedGrid.Visibility = Visibility.Visible;
+                    break;
+                case 2:
+                    PolyhedronGrid.Visibility = Visibility.Visible;
+                    NbViewsTextBox.IsEnabled = false;
+                    NbViewsTextBox.Text = "4";
+                    break;
+            }
+        }
+
         private void MethodComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
-            FibonacciGrid?.SetValue(VisibilityProperty, Visibility.Collapsed);
-            YFixedGrid?.SetValue(VisibilityProperty, Visibility.Collapsed);
-            PolyhedronGrid?.SetValue(VisibilityProperty, Visibility.Collapsed);
-
-            if (MethodComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                string selectedMethod = selectedItem.Content.ToString();
-                NbViewsTextBox.IsEnabled = true;
-                switch (selectedMethod)
-                {
-                    case "Fibonacci":
-                        FibonacciGrid.Visibility = Visibility.Visible; break;
-                    case "Y fixé":
-                        YFixedGrid.Visibility = Visibility.Visible; break;
-                    case "Polyèdrale":
-                        PolyhedronGrid.Visibility = Visibility.Visible;
-                        NbViewsTextBox.IsEnabled = false;
-                        NbViewsTextBox.Text = "4";
-                        break;
-                }
-            }
+            UpdateMethodSpecificControls();
             TryAutoFillOutputFolder();
 
         }
@@ -703,7 +709,8 @@ namespace QualCompare
             if (string.IsNullOrWhiteSpace(uiLabel)) return "Method";
             var t = uiLabel.Trim();
             if (string.Equals(t, "Fibonacci", StringComparison.OrdinalIgnoreCase)) return "Fibonacci";
-            if (t.StartsWith("Y", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(t, "Circle", StringComparison.OrdinalIgnoreCase)
+                || t.StartsWith("Y", StringComparison.OrdinalIgnoreCase))
             {
                 double roundedHeight = GetRoundedYpos();
                 string heightStr = roundedHeight.ToString("0.0", CultureInfo.InvariantCulture);

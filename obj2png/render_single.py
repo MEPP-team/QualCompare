@@ -22,7 +22,7 @@ class RenderConfig:
     """Central configuration for the render pipeline."""
     res_x: int = 650
     res_y: int = 550
-    render_engine: str = "BLENDER_EEVEE_NEXT"
+    render_engine: str = "BLENDER_EEVEE"
     taa_samples: int = 64
     filter_size: float = 1
     world_color: str = "#34322C"
@@ -52,9 +52,21 @@ def clean_scene():
 def import_obj(filepath: str):
     """Import an OBJ or PLY file and return the main mesh object."""
     if filepath.endswith(".obj"):
-        bpy.ops.wm.obj_import(filepath=filepath)
+        # Blender 4.x uses wm.obj_import, while Blender 3.x exposes import_scene.obj.
+        if hasattr(bpy.ops.wm, "obj_import"):
+            bpy.ops.wm.obj_import(filepath=filepath)
+        elif hasattr(bpy.ops.import_scene, "obj"):
+            bpy.ops.import_scene.obj(filepath=filepath)
+        else:
+            raise RuntimeError("No OBJ import operator found (expected wm.obj_import or import_scene.obj).")
     elif filepath.endswith(".ply"):
-        bpy.ops.wm.ply_import(filepath=filepath)
+        # Blender 4.x uses wm.ply_import, while Blender 3.x exposes import_mesh.ply.
+        if hasattr(bpy.ops.wm, "ply_import"):
+            bpy.ops.wm.ply_import(filepath=filepath)
+        elif hasattr(bpy.ops.import_mesh, "ply"):
+            bpy.ops.import_mesh.ply(filepath=filepath)
+        else:
+            raise RuntimeError("No PLY import operator found (expected wm.ply_import or import_mesh.ply).")
     else:
         raise RuntimeError(f"Unsupported file extension for {filepath}")
 
@@ -76,7 +88,12 @@ def setup_scene(obj_path: str, config: RenderConfig):
     scene.render.resolution_x = config.res_x
     scene.render.resolution_y = config.res_y
     scene.render.resolution_percentage = 100
-    scene.render.engine = config.render_engine
+    try:
+        scene.render.engine = config.render_engine
+    except Exception:
+        fallback_engine = "BLENDER_EEVEE"
+        print(f"[WARN] Render engine '{config.render_engine}' is unavailable. Falling back to '{fallback_engine}'.")
+        scene.render.engine = fallback_engine
     scene.cycles.device = "GPU"
 
     # Color management
@@ -815,7 +832,7 @@ def main():
     parser.add_argument(
         "--engine",
         type=str,
-        default="BLENDER_EEVEE_NEXT",
+        default="BLENDER_EEVEE",
         help="Render engine used for view rendering.",
     )
     parser.add_argument(

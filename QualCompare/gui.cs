@@ -26,28 +26,7 @@ namespace QualCompare
             sliderHeight.Value                             = Properties.Settings.Default.cameraHeightValue;
             patchifySingleOrMultipleComboBox.SelectedIndex = Properties.Settings.Default.patchifySingleOrMultipleIndex;
 
-            if (MethodComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                string selectedMethod = selectedItem.Content.ToString();
-                NbViewsTextBox.IsEnabled = true;
-
-                switch (selectedMethod)
-                {
-                    case "Fibonacci":
-                        FibonacciGrid.Visibility = Visibility.Visible;
-                        YFixedGrid.Visibility = Visibility.Collapsed;
-                        break;
-                    case "Y fixé":
-                        YFixedGrid.Visibility = Visibility.Visible;
-                        break;
-                    case "Polyèdrale":
-                        PolyhedronGrid.Visibility = Visibility.Visible;
-                        YFixedGrid.Visibility = Visibility.Collapsed;
-                        NbViewsTextBox.IsEnabled = false;
-                        NbViewsTextBox.Text = "4"; // Tetraèdre sélectionné par défaut
-                        break;
-                }
-            }
+            UpdateMethodSpecificControls();
 
             Config = LoadConfig() ?? new AppConfig();
             EnsureFirstRunConfiguration();

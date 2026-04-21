@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,26 +17,38 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        var overallStopwatch = Stopwatch.StartNew();
+        ILogger? logger = null;
+        bool renderPipelineStarted = false;
+        int exitCode = 1;
+
         try
         {
             var options = ParseArguments(args);
 
             if (options == null)
-                return PrintUsageAndExit();
+            {
+                exitCode = PrintUsageAndExit();
+                return exitCode;
+            }
 
-            var logger = new ConsoleLogger(options.Verbose);
+            logger = new ConsoleLogger(options.Verbose);
 
             // Load and validate configuration
             var config = LoadConfiguration(options.ConfigPath, logger);
             if (config == null)
-                return 1;
+            {
+                exitCode = 1;
+                return exitCode;
+            }
 
             // Validate environment (paths, directories)
             var renderService = new BlenderRenderService(config, logger);
             if (!renderService.ValidateEnvironment())
             {
                 logger.LogError("Environment validation failed. Check paths and installation.");
-                return 1;
+                exitCode = 1;
+                return exitCode;
             }
 
             // Discover objects to render
@@ -43,14 +56,19 @@ public class Program
             if (objects.Length == 0)
             {
                 logger.LogWarning("No objects found matching the configured criteria.");
-                return 0;
+                exitCode = 0;
+                return exitCode;
             }
 
             // Render each object
             logger.LogInfo($"Starting render pipeline for {objects.Length} object(s)...");
+            renderPipelineStarted = true;
+            int maxParallelism = GetEffectiveMaxParallelism(config);
+            logger.LogInfo($"Using max parallelism: {maxParallelism}");
 
             int successCount = 0;
             int failureCount = 0;
+            int completedCount = 0;
 
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
@@ -60,36 +78,62 @@ public class Program
                 cts.Cancel();
             };
 
-            // Sequential rendering at queue level (parallel would require SSD staging)
-            foreach (var objectPath in objects)
+            try
             {
-                if (cts.Token.IsCancellationRequested)
+                var parallelOptions = new ParallelOptions
                 {
-                    logger.LogWarning("Rendering interrupted by user.");
-                    break;
-                }
+                    MaxDegreeOfParallelism = maxParallelism,
+                    CancellationToken = cts.Token
+                };
 
-                var objectName = Path.GetFileNameWithoutExtension(objectPath);
-                logger.LogInfo($"Rendering: {objectName}");
+                await Parallel.ForEachAsync(objects, parallelOptions, async (objectPath, ct) =>
+                {
+                    var objectName = Path.GetFileNameWithoutExtension(objectPath);
+                    logger.LogInfo($"Rendering: {objectName}");
 
-                var success = await renderService.RenderObjectAsync(objectPath, cts.Token);
-                if (success)
-                    successCount++;
-                else
-                    failureCount++;
+                    var success = await renderService.RenderObjectAsync(objectPath, ct);
+                    if (success)
+                        Interlocked.Increment(ref successCount);
+                    else
+                        Interlocked.Increment(ref failureCount);
+
+                    int completed = Interlocked.Increment(ref completedCount);
+                    logger.LogInfo($"Progress: {completed}/{objects.Length}");
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("Rendering interrupted by user.");
             }
 
             // Summary
             logger.LogInfo($"Rendering complete: {successCount} succeeded, {failureCount} failed.");
 
-            return failureCount > 0 ? 1 : 0;
+            exitCode = failureCount > 0 ? 1 : 0;
+            return exitCode;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"[ERROR] Unexpected error: {ex.Message}");
             if (Environment.GetEnvironmentVariable("DEBUG") == "1")
                 Console.Error.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
-            return 1;
+            exitCode = 1;
+            return exitCode;
+        }
+        finally
+        {
+            if (overallStopwatch.IsRunning)
+            {
+                overallStopwatch.Stop();
+                if (renderPipelineStarted)
+                {
+                    var totalMessage = $"Total render generation time: {FormatElapsed(overallStopwatch.Elapsed)}";
+                    if (logger != null)
+                        logger.LogInfo(totalMessage);
+                    else
+                        Console.Error.WriteLine($"[INFO] {totalMessage}");
+                }
+            }
         }
     }
 
@@ -192,6 +236,19 @@ Configuration file format:
     See QualCompareCLI/CONFIG_SCHEMA.md for detailed JSON schema documentation.
 ");
         return 2;
+    }
+
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        return elapsed.ToString(@"d\.hh\:mm\:ss\.fff");
+    }
+
+    private static int GetEffectiveMaxParallelism(RenderConfig config)
+    {
+        if (config.MaxParallelism > 0)
+            return config.MaxParallelism;
+
+        return Math.Max(1, Environment.ProcessorCount / 4);
     }
 
     private class CliOptions

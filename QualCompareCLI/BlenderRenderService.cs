@@ -75,7 +75,7 @@ public class BlenderRenderService
         sb.Append($"--ext {_config.Extension} ");
         sb.Append($"--file_type {_config.FileType} ");
         sb.Append($"--obj_type {_config.ObjType} ");
-        sb.Append($"--ypos {_config.YPos:F2} ");
+        sb.Append($"--ypos {_config.YPos.ToString("0.00", CultureInfo.InvariantCulture)} ");
         sb.Append($"--up_axis {_config.UpAxis} ");
 
         // --- Render parameters ---

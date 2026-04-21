@@ -79,7 +79,7 @@ public class RenderParams
     public int ResY { get; set; } = 550;
 
     [JsonProperty("engine")]
-    public string Engine { get; set; } = "BLENDER_EEVEE_NEXT";
+    public string Engine { get; set; } = "BLENDER_EEVEE";
 
     [JsonProperty("taa")]
     public int TAA { get; set; } = 64;

@@ -247,7 +247,7 @@
 
                         <ComboBox x:Name="patchifySingleOrMultipleComboBox" Grid.Row="1" Margin="0,5,0,5" SelectedIndex="1" HorizontalContentAlignment="Stretch">
                             <ComboBoxItem Content="Single file patchification"/>
-                            <ComboBoxItem Content="Multiple files patchification"/>
+                            <ComboBoxItem Content="Folder patchification"/>
                         </ComboBox>
 
                         <Label x:Name="Img2PatchifyLabel" Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Content="Select image to patchify:" Padding="5,5,5,0" Margin="0,0,0,-5"/>
@@ -444,6 +444,7 @@
                                 <ColumnDefinition Width="70"/>
                             </Grid.ColumnDefinitions>
                             <ComboBox x:Name="RenderEngineComboBox" Grid.Column="2" Width="140">
+                                <ComboBoxItem Content="BLENDER_EEVEE"/>
                                 <ComboBoxItem Content="BLENDER_EEVEE_NEXT"/>
                                 <ComboBoxItem Content="BLENDER_WORKBENCH"/>
                                 <ComboBoxItem Content="CYCLES"/>
