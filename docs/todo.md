@@ -44,10 +44,10 @@ This todo list reflects the current repository state and focuses on low-risk, hi
   - [done] Add JSON configuration validation with detailed error messages
   - Implement configuration schema versioning for future migrations
 - **Phase 3 (Patchify cross-platform):**
-  - Port patchify C++ to CMake (enable Linux/macOS builds)
-  - Create stable C API for patchify (replace C++/CLI dependency)
-  - Implement patchify CLI or library consumer
-  - Integrate patchify into QualCompareCLI
+  - [done] Port patchify C++ to CMake (native Linux/macOS builds)
+  - [done] Create stable C API for patchify (replace C++/CLI dependency)
+  - [done] Implement patchify CLI or library consumer
+  - [done] Integrate patchify into QualCompareCLI
 
 ---
 

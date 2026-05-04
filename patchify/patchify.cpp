@@ -1,11 +1,26 @@
 ﻿#include "patchify.h"
-#include <fstream>
-#include <sstream>
-#include <vector>
+
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
 #include <regex>
+#include <set>
+#include <sstream>
+#include <system_error>
+#include <vector>
+
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+
 using namespace std;
 using namespace cv;
+namespace fs = std::filesystem;
 
 static const bool WRITE_DEBUG_OVERLAY = false;
 
@@ -59,28 +74,21 @@ string getMaskPath(const string& imagePath) {
 	return maskPath;
 }
 bool createDirectoryRecursively(const std::string& dirPath) {
-	size_t pos = 0;
-	std::string path = dirPath;
+    if (dirPath.empty() || dirPath == "/") return true;
 
-	// Si le répertoire est déjà racine (ex: "C:/"), alors il est déjà créé
-	if (path.empty() || path == "/") return true;
+    const fs::path targetPath(dirPath);
+    std::error_code ec;
+    if (fs::create_directories(targetPath, ec) || fs::exists(targetPath)) {
+        std::cout << "Successfully created directory: " << targetPath.string() << std::endl;
+        return true;
+    }
 
-	while ((pos = path.find('/', pos + 1)) != std::string::npos) {
-		std::string subDir = path.substr(0, pos);
-		if (mkdir(subDir.c_str()) != 0 && errno != EEXIST) { // EEXIST si le répertoire existe déjà
-			std::cerr << "Erreur lors de la création du répertoire: " << subDir << std::endl;
-			return false;
-		}
-	}
-
-	// Crée le dernier répertoire
-	if (mkdir(path.c_str()) != 0 && errno != EEXIST) {
-		std::cerr << "Erreur lors de la création du répertoire final: " << path << std::endl;
-		return false;
-	}
-    std::cout << "Successfully created directory: " << path << std::endl;
-
-	return true;
+    std::cerr << "Erreur lors de la création du répertoire: " << targetPath.string();
+    if (ec) {
+        std::cerr << " (" << ec.message() << ")";
+    }
+    std::cerr << std::endl;
+    return false;
 }
 
 //string getProjectRoot(const string& filePath) {
@@ -185,6 +193,7 @@ static std::string BuildHeaderLine(int px, int py, int patchSize, float overlapT
     oss << "\n"; // 1 ligne d’entête
     return oss.str();
 }
+void replaceSlash(std::string& str);
 static bool LooksLikeDataLine(const std::string& s)
 {
     // begins with optional spaces, optional '-', digits, ',', then digits
@@ -327,6 +336,7 @@ cv::Mat patchifyImage(const string& imagePath, int patchSize = 64, int px = 32, 
     return patchifiedImage;
 }
 void processImage(std::string imagePath) {
+	replaceSlash(imagePath);
     std::cout << "ProcessImage called with the file : " << imagePath << std::endl;
     cv::Mat patchifiedImage = patchifyImage(imagePath);
 }

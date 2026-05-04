@@ -34,6 +34,12 @@ public class Program
 
             logger = new ConsoleLogger(options.Verbose);
 
+            if (!string.IsNullOrWhiteSpace(options.PatchifyPath))
+            {
+                exitCode = RunPatchifyMode(options.PatchifyPath, logger);
+                return exitCode;
+            }
+
             // Load and validate configuration
             var config = LoadConfiguration(options.ConfigPath, logger);
             if (config == null)
@@ -159,6 +165,12 @@ public class Program
                     options.Verbose = true;
                     break;
 
+                case "--patchify":
+                case "-p":
+                    if (i + 1 < args.Length)
+                        options.PatchifyPath = args[++i];
+                    break;
+
                 case "--help":
                 case "-h":
                     return null; // Signal to print usage
@@ -169,13 +181,49 @@ public class Program
             }
         }
 
-        if (string.IsNullOrWhiteSpace(options.ConfigPath))
+        if (string.IsNullOrWhiteSpace(options.ConfigPath) && string.IsNullOrWhiteSpace(options.PatchifyPath))
         {
-            Console.Error.WriteLine("Error: --config path is required.");
+            Console.Error.WriteLine("Error: either --config or --patchify path is required.");
             return null;
         }
 
         return options;
+    }
+
+    private static int RunPatchifyMode(string path, ILogger logger)
+    {
+        try
+        {
+            logger.LogInfo($"Starting patchify for: {path}");
+
+            var exitCode = Directory.Exists(path)
+                ? PatchifyNative.ProcessFolder(path)
+                : PatchifyNative.ProcessImage(path);
+
+            if (exitCode == 0)
+            {
+                logger.LogInfo("Patchify complete.");
+                return 0;
+            }
+
+            logger.LogError($"Patchify failed with exit code {exitCode}.");
+            return exitCode;
+        }
+        catch (DllNotFoundException ex)
+        {
+            logger.LogError($"Patchify native library not found: {ex.Message}");
+            return 1;
+        }
+        catch (BadImageFormatException ex)
+        {
+            logger.LogError($"Patchify native library has an incompatible architecture: {ex.Message}");
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Patchify execution failed: {ex.Message}");
+            return 1;
+        }
     }
 
     /// <summary>
@@ -219,18 +267,22 @@ public class Program
     {
         Console.WriteLine(
             @"QualCompare CLI v1.0.0
-Cross-platform batch rendering of 3D objects with Blender
+Cross-platform batch rendering of 3D objects with Blender and native patch extraction
 
 Usage:
-  qualcompare-cli --config <path> [--verbose] [--help]
+    qualcompare-cli --config <path> [--verbose] [--help]
+    qualcompare-cli --patchify <path> [--verbose] [--help]
 
 Options:
   -c, --config <path>    Path to JSON configuration file (required)
   -v, --verbose          Enable verbose logging (debug output)
+    -p, --patchify <path>  Path to a rendered image or rendered object folder
   -h, --help             Show this help message
 
 Example:
   qualcompare-cli --config render_job.json --verbose
+
+    qualcompare-cli --patchify /path/to/rendered/object
 
 Configuration file format:
     See QualCompareCLI/CONFIG_SCHEMA.md for detailed JSON schema documentation.
@@ -254,6 +306,7 @@ Configuration file format:
     private class CliOptions
     {
         public string ConfigPath { get; set; } = "";
+        public string PatchifyPath { get; set; } = "";
         public bool Verbose { get; set; } = false;
     }
 }

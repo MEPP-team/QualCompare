@@ -4,12 +4,13 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 
 ## Overview
 
-**QualCompareCLI** is a .NET 8 console application that executes rendering jobs defined in JSON configuration files. It enables:
+**QualCompareCLI** is a .NET 8 console application that executes rendering jobs defined in JSON configuration files and can also run native patch extraction through the portable `patchify_c` API. It enables:
 
 - **Cross-platform rendering**: Windows, Linux, macOS (Blender and Python dependencies required)
 - **Batch processing**: Render multiple objects from a single configuration
 - **Reproducible workflows**: Configuration as code (JSON) instead of UI-based workflows
 - **Integration-friendly**: Can be scripted, automated, or called from other applications
+- **Native patch extraction**: Run patchify on a rendered image or object folder through `--patchify`
 
 ## Building
 
@@ -18,6 +19,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 - .NET 8 SDK or later
 - Blender 4.x installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
+- For `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
 
 ### First-time Linux/WSL setup (recommended)
 
@@ -62,6 +64,71 @@ qualcompare-cli --config my_render_job.json
 
 ```bash
 qualcompare-cli --config my_render_job.json --verbose
+```
+
+### Patchify mode
+
+```bash
+qualcompare-cli --patchify /path/to/rendered/object
+```
+
+Runs native patch extraction on rendered images or folders. The patch extraction follows the same logic as the WPF desktop application but uses the portable C API instead of the C++/CLI bridge.
+
+**Prerequisites:**
+- `patchify_c` library must be discoverable (see "Native library deployment" below)
+- Input folder must follow the standard structure:
+  ```
+  object_name/
+    views/
+      view_1.png
+      view_2.png
+      ...
+    masks/
+      mask_1.png
+      mask_2.png
+      ...
+  ```
+
+**Output:**
+- CSV files with patch coordinates and summaries written to the object folder
+- Return code: 0 on success, 1 on error
+
+**Example:**
+```bash
+# Single render job
+qualcompare-cli --config my_render.json
+
+# Then extract patches
+qualcompare-cli --patchify ./output/my_object
+```
+
+### Native library deployment
+
+The `--patchify` mode requires the `patchify_c` library at runtime. Ensure it is available in one of these ways:
+
+**Option 1: Next to the CLI executable (recommended for development)**
+```
+bin/
+  qualcompare-cli.exe      (or qualcompare-cli on Linux/macOS)
+  patchify_c.dll           (Windows)
+  libpatchify_c.so         (Linux)
+  libpatchify_c.dylib      (macOS)
+```
+
+**Option 2: System library path**
+- Windows: Add to `PATH`
+- Linux: Add to `LD_LIBRARY_PATH` or use `ldconfig`
+- macOS: Add to `DYLD_LIBRARY_PATH` or use `/usr/local/lib`
+
+**Option 3: Custom location (for advanced deployments)**
+Set environment variable before running:
+```bash
+# Windows
+$env:QUALCOMPARE_PATCHIFY_PATH = "C:\path\to\patchify_c.dll"
+
+# Linux/macOS
+export QUALCOMPARE_PATCHIFY_PATH=/opt/patchify_c.so
+qualcompare-cli --patchify ...
 ```
 
 ### Help
@@ -242,6 +309,8 @@ The GUI (Windows WPF) can export its current settings as a JSON configuration fi
 - Reproducibility across platforms
 - Easier batch automation
 
+The CLI can also call the native patch extraction library directly through `--patchify`, which avoids the Windows-only C++/CLI wrapper for cross-platform consumers.
+
 ## Development notes
 
 - **Configuration**: See `RenderConfig.cs` for the JSON schema mapping
@@ -251,5 +320,4 @@ The GUI (Windows WPF) can export its current settings as a JSON configuration fi
 ## Future enhancements
 
 - richer configuration validation and diagnostics
-- optional patchify integration
 - schema evolution/version migration support

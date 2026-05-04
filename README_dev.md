@@ -198,6 +198,110 @@ For a minimal validation pass:
 2. Render a low number of views using the default method.
 3. Confirm output folders contain both `views/` and `masks/`.
 4. Run patchify on one rendered image or on the rendered folder.
+
+## Patchify: Native cross-platform build and C API
+
+As of this update, the native `patchify` core has been modernized for cross-platform builds and consumption:
+
+### CMake-based build
+
+The `patchify/` folder now includes a `CMakeLists.txt` that enables:
+
+- **Cross-platform compilation** on Windows, Linux, and macOS
+- **Decoupling from Visual Studio**, allowing non-Windows developers to build the native core independently
+- **OpenCV discovery** via standard CMake module search paths or explicit `OPENCV_DIR` hints
+- **Three build targets**:
+  - `patchify` – static library (core algorithm)
+  - `patchify_c` – shared library exposing a stable C ABI
+  - `patchify_cli` – standalone CLI for quick testing
+
+### C API boundary
+
+Instead of direct C++ linkage, the library now exposes two stable C functions:
+
+```c
+int patchify_process_image(const char* imagePath);
+int patchify_process_folder(const char* folderPath);
+```
+
+Benefits:
+- Decouples application code from C++ symbol name mangling
+- Enables cross-platform shared library loading (`.dll` on Windows, `.so` on Linux, `.dylib` on macOS)
+- Simplifies .NET P/Invoke interop for QualCompareCLI
+- Allows alternative language bindings (Python, Rust, etc.) in the future
+
+### Building patchify with CMake
+
+**Prerequisites:**
+- CMake 3.20 or later
+- C++ compiler with C++20 support (MSVC 2022, GCC 10+, or Clang 12+)
+- OpenCV development headers and libraries
+
+**Commands:**
+
+```bash
+# Configure (from repository root)
+cmake -S patchify -B patchify/build
+
+# Build all targets (Debug)
+cmake --build patchify/build --config Debug
+
+# Build specific target
+cmake --build patchify/build --config Debug --target patchify_cli
+
+# Install to system or custom location (optional)
+cmake --install patchify/build --config Debug --prefix /opt/patchify
+```
+
+**Windows with OpenCV:**
+
+If OpenCV is installed at `C:\Program Files\opencv`, the CMakeLists.txt will attempt auto-discovery. Otherwise, set the environment variable:
+
+```powershell
+Set-Item -Path Env:OpenCV_DIR -Value "C:\Program Files\opencv\build\x64\vc16\lib"
+```
+
+**Linux/macOS:**
+
+```bash
+export OpenCV_DIR=/opt/opencv/lib/cmake/opencv4
+cmake -S patchify -B patchify/build
+```
+
+### Patchify CLI
+
+After building, `patchify_cli` is available for testing:
+
+```bash
+# Process a single image
+patchify_cli /path/to/image.png --image
+
+# Process a folder of rendered images
+patchify_cli /path/to/rendered_object/ --folder
+
+# Help
+patchify_cli --help
+```
+
+The CLI returns 0 on success, non-zero on error.
+
+### Integration with QualCompareCLI
+
+The .NET CLI (`QualCompareCLI`) now includes a `--patchify` mode that:
+
+1. Discovers the native `patchify_c` library from common locations
+2. Calls P/Invoke methods to process images or folders
+3. Reports success/failure through the CLI
+
+```bash
+dotnet run --project QualCompareCLI -- --patchify /path/to/rendered_object
+```
+
+See `QualCompareCLI/README.md` for full usage.
+
+### Windows-only legacy bridge
+
+The existing `PatchifyWrapper/` C++/CLI bridge remains available for the WPF desktop application. It will continue to work on Windows as long as developers maintain it alongside the new C API. New cross-platform work should use the C API instead of the C++/CLI wrapper.
 5. Confirm that CSV outputs are generated without wrapper or native DLL errors.
 
 ### What to check when startup fails
@@ -304,6 +408,15 @@ Primary areas:
 - `patchify/`
 - `PatchifyWrapper/`
 
+Current setup:
+
+- `patchify/` now has a CMake build and a small native CLI so the core patch extraction code can be built and exercised on Linux, macOS, and Windows.
+- OpenCV is still an external dependency; if CMake cannot find it automatically, point `OPENCV_DIR` or `OpenCV_DIR` at the folder containing `OpenCVConfig.cmake`.
+- `patchify/` now also exposes a stable C API in `patchify_c` for language bindings and other native consumers.
+- `QualCompareCLI` can invoke that native API through a `--patchify` mode.
+- `PatchifyWrapper/` remains Windows-only because it is C++/CLI and is still the path used by the WPF application.
+- The full repository is therefore not 100 percent cross-platform yet because the WPF GUI and C++/CLI bridge remain Windows-only.
+
 Main regression risks:
 
 - OpenCV linkage failures
@@ -312,7 +425,7 @@ Main regression risks:
 - mask path derivation breakage
 - path separator assumptions
 
-When changing patch extraction behavior, validate both wrapper loading and a real patchify run from the WPF application, not just native compilation.
+When changing patch extraction behavior, validate the native CMake build, the shared C API, and the CLI first, then validate wrapper loading and a real patchify run from the WPF application, not just native compilation.
 
 ### Validating installer changes
 

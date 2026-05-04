@@ -10,6 +10,17 @@
 */x64/
 */Release/
 /patchify/patchify/
+# CMake build outputs
+/patchify/build/
+/patchify/CMakeFiles/
+/patchify/CMakeCache.txt
+/patchify/cmake_install.cmake
+/patchify/Makefile
+/patchify/compile_commands.json
+# Generated project summaries not meant for the public repo
+/MODIFICATIONS_FR.md
+/docs/patchify_portability.md
+/docs/patchify_wrapper_strategy.md
 # Excluding specific file types
 *.pdb
 *.obj
