@@ -105,17 +105,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 
 #### WSL (Windows Subsystem for Linux)
 
-If using WSL on Windows, follow the **Linux** setup above. Note that Blender must be available inside WSL (not just on Windows). For WSL2, you may also need to configure display forwarding if running with GUI. For headless rendering (recommended), WSL works seamlessly with the CLI.
-
-### Build commands
-
-```bash
-# Restore packages and build
-dotnet build
-
-# Build release binary
-dotnet publish -c Release -o ./bin/release
-```
+If using WSL on Windows, follow the **Linux** setup above. Note that Blender must be available inside WSL (not just on Windows). For WSL2, you may also need to configure display forwarding if running with GUI. For headless rendering (recommended), WSL works seamlessly with the CLI. However, by testing we noticed slowness related to WSL and not the application itself.
 
 The output binary will be:
 - `qualcompare-cli` (Linux/macOS)
