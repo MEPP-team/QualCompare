@@ -14,29 +14,98 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 
 ## Building
 
-### Requirements
+### System Requirements
 
 - .NET 8 SDK or later
 - Blender 4.x installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
 - For `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
 
-### First-time Linux/WSL setup (recommended)
+### Platform-Specific Setup
 
-On a fresh Linux/WSL environment, install OpenCV and NumPy in Blender's Python before the first render.
+#### Windows
 
-```bash
-# 1) Get Blender's Python executable path
-BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + sys.executable)" 2>/dev/null | sed -n 's/^PY_EXE=//p' | head -n 1)
+1. **Install Blender 4.4+**
+   - Download from [blender.org](https://www.blender.org)
+   - Use default installation path or note your custom path
 
-# 2) Bootstrap pip and install required packages
-"$BLENDER_PY" -m ensurepip --upgrade
-"$BLENDER_PY" -m pip install --upgrade pip
-"$BLENDER_PY" -m pip install opencv-python numpy
+2. **Install OpenCV in Blender's Python**
+   ```powershell
+   cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
+   .\python.exe -m ensurepip
+   .\python.exe -m pip install --upgrade pip
+   .\python.exe -m pip install opencv-python numpy
+   ```
+   (Adjust version number as needed)
 
-# 3) Verify imports from Blender runtime
-blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__version__)"
-```
+3. **Build QualCompareCLI**
+   ```powershell
+   dotnet build
+   dotnet publish -c Release -o ./bin/release
+   ```
+   Output: `bin\release\qualcompare-cli.exe`
+
+#### Linux
+
+1. **Install Blender and dependencies**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get update
+   sudo apt-get install blender python3 python3-pip
+   
+   # Or use snap
+   sudo snap install blender --classic
+   ```
+
+2. **Install Python packages in Blender's environment**
+   ```bash
+   # Get Blender's Python executable
+   BLENDER_PY=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | tail -n 1)
+   
+   # Bootstrap pip and install packages
+   "$BLENDER_PY" -m ensurepip --upgrade
+   "$BLENDER_PY" -m pip install --upgrade pip
+   "$BLENDER_PY" -m pip install opencv-python numpy
+   ```
+
+3. **Build QualCompareCLI**
+   ```bash
+   dotnet build
+   dotnet publish -c Release -o ./bin/release
+   ```
+   Output: `bin/release/qualcompare-cli`
+
+#### macOS
+
+1. **Install Blender and dependencies**
+   ```bash
+   # Using Homebrew
+   brew install blender python
+   
+   # Or download from blender.org
+   ```
+
+2. **Install Python packages in Blender's environment**
+   ```bash
+   # Get Blender's Python executable
+   BLENDER_PY=$(/Applications/Blender.app/Contents/MacOS/Blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | tail -n 1)
+   
+   # Bootstrap pip and install packages
+   "$BLENDER_PY" -m ensurepip --upgrade
+   "$BLENDER_PY" -m pip install --upgrade pip
+   "$BLENDER_PY" -m pip install opencv-python numpy
+   ```
+
+3. **Build QualCompareCLI**
+   ```bash
+   dotnet build
+   dotnet publish -c Release -o ./bin/release
+   ```
+   Output: `bin/release/qualcompare-cli`
+
+#### WSL (Windows Subsystem for Linux)
+
+If using WSL on Windows, follow the **Linux** setup above. Note that Blender must be available inside WSL (not just on Windows). For WSL2, you may also need to configure display forwarding if running with GUI. For headless rendering (recommended), WSL works seamlessly with the CLI.
 
 ### Build commands
 

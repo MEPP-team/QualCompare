@@ -4,19 +4,32 @@ QualCompare is a Windows desktop application for reproducible multi-view renderi
 
 ## Start here
 
-- Users: see [README_user.md](README_user.md) for installation, first launch, quick start, rendering steps, and troubleshooting.
-- Developers: see [README_dev.md](README_dev.md) for architecture, dependencies, contributor setup, and project constraints.
+**For Desktop Application (Windows WPF GUI):**
+- Installation and usage: [QualCompare/README.md](QualCompare/README.md)
+- Quick start, troubleshooting, and workflow guide
 
-## WSL note
+**For Command-Line Tool (cross-platform):**
+- Setup and usage: [QualCompareCLI/README.md](QualCompareCLI/README.md)
+- Includes platform-specific instructions for Windows, Linux, and macOS
 
-The primary supported runtime for the GUI is native Windows.
+**For Developers:**
+- Architecture, dependencies, and contribution guide: [README_dev.md](README_dev.md)
+- Build system, project constraints, and future work
 
-The CLI can run on Linux/WSL, but some WSL environments may require OpenGL/EGL software-rendering fallbacks to run Blender reliably. In those cases, rendering can be significantly slower than native Windows or native Linux GPU-accelerated runs.
+## Platform support
 
-For Linux/WSL setup and troubleshooting details, see:
+**Windows (GUI & CLI):**
+- Native Windows 10/11 with .NET 8+
+- Desktop WPF application: [QualCompare/README.md](QualCompare/README.md)
+- Command-line tool: [QualCompareCLI/README.md](QualCompareCLI/README.md)
 
-- [QualCompareCLI/README.md](QualCompareCLI/README.md)
-- [docs/installer_validation.md](docs/installer_validation.md)
+**Linux & macOS (CLI only):**
+- Cross-platform .NET 8+ runtime
+- Command-line tool: [QualCompareCLI/README.md](QualCompareCLI/README.md) with platform-specific setup
+
+**WSL (Windows Subsystem for Linux):**
+- Supported for CLI usage; follow the Linux setup in [QualCompareCLI/README.md](QualCompareCLI/README.md)
+- Note: Some WSL environments may require software-rendering fallbacks for Blender, which can reduce performance compared to native GPU-accelerated rendering
 
 ## Main features
 
