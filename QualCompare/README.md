@@ -6,53 +6,6 @@ It is designed for research usage on meshes and point clouds, with a practical G
 
 ---
 
-## 5-minute quick start
-
-Use this section if you want to check quickly that QualCompare works on your machine.
-
-1. Install Blender 4.x on Windows. (4.4+ recommended)
-2. Launch QualCompare.
-3. If asked, select your `blender.exe`.
-4. Choose a small folder containing one `.obj` file.
-5. Choose an empty output folder.
-6. Select:
-   - format: `obj`
-   - file selection: `everything` or `source`
-   - method: `Fibonacci`
-   - number of views: `4`
-7. Start rendering.
-8. Open the output folder and confirm you have:
-
-```text
-object_name/
-    views/
-    masks/
-```
-
-1. Open the Patchify area and run patch extraction on one rendered image or folder.
-1. Confirm that patch CSV output is created.
-
-If this quick test works, the application is ready for larger datasets and longer experiments.
-
----
-
-## What the software does
-
-QualCompare can:
-
-- render multiple views of `.obj` meshes and `.ply` point clouds
-- generate binary masks for each rendered view
-- organize outputs in a stable folder layout
-- extract image patches for training and evaluation workflows
-
-Typical use cases:
-
-- preparing view-based datasets for 3D quality assessment
-- generating inputs for LPIPS or Graphics-LPIPS style pipelines
-- building reproducible rendering protocols for research experiments
-
----
-
 ## System requirements
 
 - Windows 10 or Windows 11
@@ -100,6 +53,51 @@ If you are using a locally built version:
 4. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
 5. On first launch, let the application create its initial configuration.
 6. Verify that Blender and the bundled render script are correctly detected.
+
+## 5-minute quick start
+
+Use this section if you want to check quickly that QualCompare works on your machine.
+
+1. Install Blender 4.x on Windows. (4.4+ recommended)
+2. Launch QualCompare.
+3. If asked, select your `blender.exe`.
+4. Choose a small folder containing one `.obj` file.
+5. Choose an empty output folder.
+6. Select:
+   - format: `obj`
+   - file selection: `everything` or `source`
+   - method: `Fibonacci`
+   - number of views: `4`
+7. Start rendering.
+8. Open the output folder and confirm you have:
+
+```text
+object_name/
+    views/
+    masks/
+```
+
+1. Open the Patchify area and run patch extraction on one rendered image or folder.
+1. Confirm that patch CSV output is created.
+
+If this quick test works, the application is ready for larger datasets and longer experiments.
+
+---
+
+## What the software does
+
+QualCompare can:
+
+- render multiple views of `.obj` meshes and `.ply` point clouds
+- generate binary masks for each rendered view
+- organize outputs in a stable folder layout
+- extract image patches for training and evaluation workflows
+
+Typical use cases:
+
+- preparing view-based datasets for 3D quality assessment
+- generating inputs for LPIPS or Graphics-LPIPS style pipelines
+- building reproducible rendering protocols for research experiments
 
 ---
 

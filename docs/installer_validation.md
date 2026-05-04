@@ -4,6 +4,8 @@ This document defines the validation protocol for a fresh-machine installation o
 
 The goal is to confirm that the installer is usable without manual file edits and that the installed application preserves the current rendering and patchify workflow.
 
+For user-facing setup details, see [QualCompare/README.md](../QualCompare/README.md) and [QualCompareCLI/README.md](../QualCompareCLI/README.md).
+
 ---
 
 ## Test goals
@@ -150,7 +152,7 @@ After rendering:
 During validation, explicitly watch for these regressions:
 
 - render script path still pointing to a development machine path
-- model CSV path still pointing to a development machine path
+- resource CSV path still pointing to a development machine path
 - missing bundled Python scripts in the installed directory
 - missing bundled resources in the installed directory
 - Patchify DLL load failure
@@ -188,9 +190,9 @@ This should be logged before changing code so that installer regressions remain 
 
 ---
 
-## Linux/WSL CLI first-run validation
+## Linux CLI first-run validation
 
-When validating the cross-platform CLI (`QualCompareCLI`) on a fresh Linux/WSL environment, run this additional checklist to avoid first-run dependency failures:
+When validating the cross-platform CLI (`QualCompareCLI`) on a fresh Linux environment, run this additional checklist to avoid first-run dependency failures:
 
 1. confirm Blender is installed and callable (`blender --version`)
 1. discover Blender Python path:
@@ -216,6 +218,8 @@ blender --background --python-expr "import cv2, numpy; print('cv2', cv2.__versio
 1. run one CLI smoke test with `--verbose` and confirm `views/` and `masks/` outputs are generated
 
 If step 4 fails, first-run rendering will fail with `ModuleNotFoundError: No module named 'cv2'`.
+
+If you are validating under WSL, use the same steps, but note that some environments require software rendering or extra display configuration for Blender.
 
 
 

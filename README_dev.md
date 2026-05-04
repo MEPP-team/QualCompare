@@ -2,9 +2,14 @@
 
 ## Purpose and research constraints
 
-QualCompare is a Windows-only research application built during a PhD project on perceptual quality assessment of 3D content. It is designed to generate reproducible multi-view renderings of meshes and point clouds, produce binary masks, and prepare patch-based image datasets for downstream quality metric experiments.
+QualCompare is a research application built during a PhD project on perceptual quality assessment of 3D content. The desktop GUI remains Windows-only, while the companion CLI and native patchify core are being aligned for cross-platform use.
 
 This repository is not production software. The main priority is to preserve reproducibility, backward compatibility, and the existing experimental workflow. Small safe changes are preferred over broad refactors.
+
+For user-facing setup and platform-specific usage, see:
+
+- [QualCompare/README.md](QualCompare/README.md)
+- [QualCompareCLI/README.md](QualCompareCLI/README.md)
 
 The current end-to-end workflow is:
 
@@ -39,7 +44,7 @@ When editing the project, assume that output layout, Blender command-line argume
   Maintained technical documentation covering architecture, datasets, rendering, installer validation, known issues, release process, and short-term priorities.
 
 - `QualCompareCLI/`
-  **NEW**: Cross-platform .NET 8 console application for batch rendering without UI. Reads JSON configuration files and executes rendering on Windows, Linux, or macOS. Enables automation and scripting workflows. See `QualCompareCLI/README.md` for usage.
+  Cross-platform .NET 8 console application for batch rendering without UI. It reads JSON configuration files and executes rendering on Windows, Linux, or macOS.
 
 Historical naming still exists internally. The product name is now `QualCompare`, but older names remain in some solution-level identifiers, namespaces, paths, comments, and documentation fragments. Treat those as technical debt rather than a reason to rename things aggressively.
 
@@ -163,7 +168,7 @@ The current project files look for OpenCV include and lib folders and attempt to
 - `numpy`
 - `mathutils`
 
-`bpy` and `mathutils` come from Blender. `cv2` and `numpy` must be available in Blender's Python environment for the render script to work reliably. The existing installation notes in `QualCompare/README.md` should be treated as the current baseline, even though they still need cleanup.
+`bpy` and `mathutils` come from Blender. `cv2` and `numpy` must be available in Blender's Python environment for the render script to work reliably.
 
 ## Platform note
 
@@ -287,22 +292,19 @@ The CLI returns 0 on success, non-zero on error.
 
 ### Integration with QualCompareCLI
 
-The .NET CLI (`QualCompareCLI`) now includes a `--patchify` mode that:
-
-1. Discovers the native `patchify_c` library from common locations
-2. Calls P/Invoke methods to process images or folders
-3. Reports success/failure through the CLI
+The .NET CLI (`QualCompareCLI`) includes a `--patchify` mode that discovers the native `patchify_c` library, calls the C API through P/Invoke, and reports success or failure through the CLI.
 
 ```bash
 dotnet run --project QualCompareCLI -- --patchify /path/to/rendered_object
 ```
 
-See `QualCompareCLI/README.md` for full usage.
+See `QualCompareCLI/README.md` for full usage and deployment details.
 
 ### Windows-only legacy bridge
 
-The existing `PatchifyWrapper/` C++/CLI bridge remains available for the WPF desktop application. It will continue to work on Windows as long as developers maintain it alongside the new C API. New cross-platform work should use the C API instead of the C++/CLI wrapper.
-5. Confirm that CSV outputs are generated without wrapper or native DLL errors.
+The existing `PatchifyWrapper/` C++/CLI bridge remains the path used by the WPF desktop application on Windows. It is still supported, but new cross-platform work should prefer the C API instead of the C++/CLI wrapper.
+
+When validating patch extraction changes, confirm that CSV outputs are generated without wrapper or native DLL errors.
 
 ### What to check when startup fails
 
@@ -333,10 +335,10 @@ object_name/masks/mask_N.png
 
 The `QualCompareCLI` project provides cross-platform batch rendering without UI and reuses the same Blender argument contract as the WPF app.
 
-For usage, schema, Linux/WSL setup, and troubleshooting, use the canonical documentation:
+For usage, schema, Linux/WSL setup, and troubleshooting, use the canonical documentation in:
 
-- `QualCompareCLI/README.md`
-- `QualCompareCLI/CONFIG_SCHEMA.md`
+- [QualCompareCLI/README.md](QualCompareCLI/README.md)
+- [QualCompareCLI/CONFIG_SCHEMA.md](QualCompareCLI/CONFIG_SCHEMA.md)
 
 ## Practical contributor workflows
 
@@ -469,15 +471,16 @@ The following items are strong candidates for the next development iterations:
 
 Useful repo documents for future sessions:
 
-- `README_user.md`
-- `RELEASE_NOTES.md`
-- `docs/project_overview.md`
-- `docs/current_architecture.md`
-- `docs/rendering_pipeline.md`
-- `docs/datasets_and_protocols.md`
-- `docs/known_issues.md`
-- `docs/todo.md`
-- `docs/installer_validation.md`
-- `docs/release_process.md`
+- [QualCompare/README.md](QualCompare/README.md)
+- [QualCompareCLI/README.md](QualCompareCLI/README.md)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md)
+- [docs/project_overview.md](docs/project_overview.md)
+- [docs/current_architecture.md](docs/current_architecture.md)
+- [docs/rendering_pipeline.md](docs/rendering_pipeline.md)
+- [docs/datasets_and_protocols.md](docs/datasets_and_protocols.md)
+- [docs/known_issues.md](docs/known_issues.md)
+- [docs/todo.md](docs/todo.md)
+- [docs/installer_validation.md](docs/installer_validation.md)
+- [docs/release_process.md](docs/release_process.md)
 
 The code remains the final source of truth when documentation and implementation diverge.
