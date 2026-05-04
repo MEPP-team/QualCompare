@@ -3,6 +3,7 @@
 
 #include "PatchifyWrapper.h"
 #include <msclr/marshal_cppstd.h>  // conversion from std::string to System::String^
+#include <iostream>
 
 using namespace PatchifyLib;
 void PatchifyWrapper::ProcessImage(System::String^ imagePath) {
