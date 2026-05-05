@@ -23,7 +23,6 @@
 /docs/patchify_wrapper_strategy.md
 # Excluding specific file types
 *.pdb
-*.obj
 *.pch
 *.tlog
 *.dll

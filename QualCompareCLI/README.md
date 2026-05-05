@@ -47,7 +47,14 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 
 #### Linux
 
-1. **Install Blender and dependencies**
+1. **Install .NET 8, Blender, and dependencies**
+  ```bash
+  # Debian/Ubuntu example (after adding Microsoft's apt feed)
+  sudo apt-get update
+  sudo apt-get install dotnet-sdk-8.0 blender python3 python3-pip
+  ```
+
+2. **Install Blender and dependencies**
    ```bash
    # Ubuntu/Debian
    sudo apt-get update
@@ -57,10 +64,10 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
    sudo snap install blender --classic
    ```
 
-2. **Install Python packages in Blender's environment**
+3. **Install Python packages in Blender's environment**
    ```bash
    # Get Blender's Python executable
-   BLENDER_PY=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | tail -n 1)
+  BLENDER_PY=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
    
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
@@ -68,7 +75,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
    "$BLENDER_PY" -m pip install opencv-python numpy
    ```
 
-3. **Build QualCompareCLI**
+4. **Build QualCompareCLI**
    ```bash
    dotnet build
    dotnet publish -c Release -o ./bin/release
@@ -88,7 +95,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 2. **Install Python packages in Blender's environment**
    ```bash
    # Get Blender's Python executable
-   BLENDER_PY=$(/Applications/Blender.app/Contents/MacOS/Blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | tail -n 1)
+  BLENDER_PY=$(/Applications/Blender.app/Contents/MacOS/Blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
    
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
@@ -110,6 +117,20 @@ If using WSL on Windows, follow the **Linux** setup above. Note that Blender mus
 The output binary will be:
 - `qualcompare-cli` (Linux/macOS)
 - `qualcompare-cli.exe` (Windows)
+
+### Quick JSON bootstrap
+
+The JSON files in `examples/` are templates. They still need machine-specific paths before you can run them directly. To fill one quickly, use the helper script below:
+
+```bash
+python3 scripts/fill_render_config_paths.py \
+  --template examples/render_fibonacci_12views.json \
+  --output /tmp/render.local.json \
+  --input-dir /data/models \
+  --output-dir /data/output
+```
+
+The script sets `renderScriptPath` automatically from the repository layout and discovers Blender's Python executable from `blender` in `PATH`. If Blender is not in `PATH`, pass `--blender-path /usr/bin/blender` (or your local executable path).
 
 ## Usage
 
@@ -306,6 +327,15 @@ See `examples/render_ply_voxel_windows.json`
 ```bash
 qualcompare-cli --config examples/render_ply_voxel_windows.json
 ```
+
+### Test assets
+
+The `sample_data/quick_test/source/` tree includes small fixtures that are useful for smoke tests on Linux native:
+
+- `sample_data/quick_test/source/Bread/source/` contains `bread_BakedUV.obj.mtl` and `BakedTexture_Bread.jpg`
+- `sample_data/quick_test/source/baluster-vase-one-of-three-in-a-five-piece/source/` contains `balustervase_BakedUV.mtl` and `BakedTexture_vase.jpg`
+
+The `.obj` geometry files are not present in this snapshot, so these assets are best used as texture/material inputs or paired with your own mesh files.
 
 ## Output structure
 
