@@ -55,6 +55,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
   ```
 
 2. **Install Blender and dependencies**
+   
    ```bash
    # Ubuntu/Debian
    sudo apt-get update
@@ -65,9 +66,10 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
    ```
 
 3. **Install Python packages in Blender's environment**
+   
    ```bash
-   # Get Blender's Python executable
-  BLENDER_PY=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
+   # Get Blender Python executable
+   BLENDER_PY=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
    
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
@@ -95,8 +97,8 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 2. **Install Python packages in Blender's environment**
    ```bash
    # Get Blender's Python executable
-  BLENDER_PY=$(/Applications/Blender.app/Contents/MacOS/Blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
-   
+   BLENDER_PY=$(/Applications/Blender.app/Contents/MacOS/Blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | head -n 1)
+
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
    "$BLENDER_PY" -m pip install --upgrade pip
@@ -130,7 +132,7 @@ python3 scripts/fill_render_config_paths.py \
   --output-dir /data/output
 ```
 
-The script sets `renderScriptPath` automatically from the repository layout and discovers Blender's Python executable from `blender` in `PATH`. If Blender is not in `PATH`, pass `--blender-path /usr/bin/blender` (or your local executable path).
+The script sets `blenderPath` from `blender` in `PATH` and resolves `renderScriptPath` from the repository layout. If Blender is not in `PATH`, pass `--blender-path /usr/bin/blender` (or your local executable path).
 
 ## Usage
 
