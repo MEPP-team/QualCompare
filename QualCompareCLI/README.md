@@ -332,12 +332,8 @@ qualcompare-cli --config examples/render_ply_voxel_windows.json
 
 ### Test assets
 
-The `sample_data/quick_test/source/` tree includes small fixtures that are useful for smoke tests on Linux native:
+The `sample_data/quick_test/source/` tree includes small textured meshes that are useful for smoke tests:
 
-- `sample_data/quick_test/source/Bread/source/` contains `bread_BakedUV.obj.mtl` and `BakedTexture_Bread.jpg`
-- `sample_data/quick_test/source/baluster-vase-one-of-three-in-a-five-piece/source/` contains `balustervase_BakedUV.mtl` and `BakedTexture_vase.jpg`
-
-The `.obj` geometry files are not present in this snapshot, so these assets are best used as texture/material inputs or paired with your own mesh files.
 
 ## Output structure
 
