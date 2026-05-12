@@ -98,13 +98,35 @@ public class Program
                     logger.LogInfo($"Rendering: {objectName}");
 
                     var success = await renderService.RenderObjectAsync(objectPath, ct);
-                    if (success)
-                        Interlocked.Increment(ref successCount);
-                    else
+                    if (!success)
+                    {
                         Interlocked.Increment(ref failureCount);
+                        int failedProgressCount = Interlocked.Increment(ref completedCount);
+                        logger.LogInfo($"Progress: {failedProgressCount}/{objects.Length}");
+                        return;
+                    }
 
-                    int completed = Interlocked.Increment(ref completedCount);
-                    logger.LogInfo($"Progress: {completed}/{objects.Length}");
+                    if (!options.NoPatchify)
+                    {
+                        var patchifyFolder = renderService.GetRenderedObjectOutputFolder(objectPath);
+                        var patchifyExitCode = RunPatchifyMode(patchifyFolder, logger);
+                        if (patchifyExitCode != 0)
+                        {
+                            logger.LogError($"Patchify failed for rendered object: {objectName}");
+                            Interlocked.Increment(ref failureCount);
+                        }
+                        else
+                        {
+                            Interlocked.Increment(ref successCount);
+                        }
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref successCount);
+                    }
+
+                    int completedProgressCount = Interlocked.Increment(ref completedCount);
+                    logger.LogInfo($"Progress: {completedProgressCount}/{objects.Length}");
                 });
             }
             catch (OperationCanceledException)
@@ -163,6 +185,10 @@ public class Program
                 case "--verbose":
                 case "-v":
                     options.Verbose = true;
+                    break;
+
+                case "--no-patchify":
+                    options.NoPatchify = true;
                     break;
 
                 case "--patchify":
@@ -270,17 +296,19 @@ public class Program
 Cross-platform batch rendering of 3D objects with Blender and native patch extraction
 
 Usage:
-    qualcompare-cli --config <path> [--verbose] [--help]
+    qualcompare-cli --config <path> [--verbose] [--no-patchify] [--help]
     qualcompare-cli --patchify <path> [--verbose] [--help]
 
 Options:
   -c, --config <path>    Path to JSON configuration file (required)
   -v, --verbose          Enable verbose logging (debug output)
+    --no-patchify          Render only and skip automatic patch extraction
     -p, --patchify <path>  Path to a rendered image or rendered object folder
   -h, --help             Show this help message
 
 Example:
-  qualcompare-cli --config render_job.json --verbose
+    qualcompare-cli --config render_job.json --verbose
+    qualcompare-cli --config render_job.json --no-patchify
 
     qualcompare-cli --patchify /path/to/rendered/object
 
@@ -308,5 +336,6 @@ Configuration file format:
         public string ConfigPath { get; set; } = "";
         public string PatchifyPath { get; set; } = "";
         public bool Verbose { get; set; } = false;
+        public bool NoPatchify { get; set; } = false;
     }
 }

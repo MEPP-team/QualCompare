@@ -10,7 +10,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 - **Batch processing**: Render multiple objects from a single configuration
 - **Reproducible workflows**: Configuration as code (JSON) instead of UI-based workflows
 - **Integration-friendly**: Can be scripted, automated, or called from other applications
-- **Native patch extraction**: Run patchify on a rendered image or object folder through `--patchify`
+- **Native patch extraction**: Patchify runs automatically after rendering by default; use `--no-patchify` to skip it, or `--patchify` to process an existing rendered image/object folder directly
 
 ## Building
 
@@ -19,7 +19,18 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 - .NET 8 SDK or later
 - Blender 4.x installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
-- For `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
+- For the default render pipeline, and for `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
+
+### Quick prerequisite checklist
+
+Before the first test run, make sure you have:
+
+1. `.NET 8`
+2. `Blender 4.x`
+3. `opencv-python` and `numpy` inside Blender's Python environment
+4. `patchify_c` available if you want the default render pipeline to patchify outputs or if you want to use `--patchify`
+
+For a quick first render-only test, you only need items 1 to 3 and you should pass `--no-patchify`. If you want the default full pipeline, install item 4 too.
 
 ### Platform-Specific Setup
 
@@ -148,16 +159,23 @@ qualcompare-cli --config my_render_job.json
 qualcompare-cli --config my_render_job.json --verbose
 ```
 
-### Patchify mode
+### Patchify control
+
+Rendering runs patchify automatically by default. Use `--no-patchify` when you want to render only, or `--patchify` when you want to process an already-rendered image or folder.
 
 ```bash
+qualcompare-cli --config my_render_job.json
+
+qualcompare-cli --config my_render_job.json --no-patchify
+
 qualcompare-cli --patchify /path/to/rendered/object
 ```
 
-Runs native patch extraction on rendered images or folders. The patch extraction follows the same logic as the WPF desktop application but uses the portable C API instead of the C++/CLI bridge.
+`--patchify` runs native patch extraction on rendered images or folders. It follows the same logic as the WPF desktop application but uses the portable C API instead of the C++/CLI bridge. `--no-patchify` skips the automatic post-render patch step.
 
 **Prerequisites:**
 - `patchify_c` library must be discoverable (see "Native library deployment" below)
+- The native `patchify` components are built by default when configuring the repository with CMake. If you configured the native build with `-DBUILD_PATCHIFY=OFF`, the shared `patchify_c` library and `patchify_cli` will not be produced.
 - Input folder must follow the standard structure:
   ```
   object_name/
@@ -320,6 +338,9 @@ See `examples/render_fibonacci_12views.json`
 
 ```bash
 qualcompare-cli --config examples/render_fibonacci_12views.json
+
+# Render only, without automatic patch extraction
+qualcompare-cli --config examples/render_fibonacci_12views.json --no-patchify
 ```
 
 ### Example 2: PLY with voxel rendering (Windows)
@@ -332,7 +353,12 @@ qualcompare-cli --config examples/render_ply_voxel_windows.json
 
 ### Test assets
 
-The `sample_data/quick_test/source/` tree includes small textured meshes that are useful for smoke tests:
+The `sample_data/quick_test/source/` tree includes small fixtures that are useful for smoke tests:
+
+- `sample_data/quick_test/source/Bread/source/` contains texture/material assets for a Bread sample.
+- `sample_data/quick_test/source/baluster-vase-one-of-three-in-a-five-piece/source/` contains texture/material assets for a vase sample.
+
+The `.obj` geometry files are not present in this snapshot, so these assets are best used as supporting files or paired with your own mesh files.
 
 
 ## Output structure

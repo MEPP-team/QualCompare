@@ -82,17 +82,28 @@ if(_opencv_runtime_target)
     )
 endif()
 
-add_executable(patchify_cli
-    patchify_cli.cpp
-)
+option(BUILD_PATCHIFY "Build patchify components (patchify, patchify_c, patchify_cli)" ON)
 
-target_link_libraries(patchify_cli
-    PRIVATE
-        patchify_c
-)
+if(BUILD_PATCHIFY)
+    add_executable(patchify_cli
+        patchify_cli.cpp
+    )
 
-install(TARGETS patchify patchify_c patchify_cli
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
+    target_link_libraries(patchify_cli
+        PRIVATE
+            patchify_c
+    )
+
+    install(TARGETS patchify patchify_c patchify_cli
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+else()
+    message(STATUS "BUILD_PATCHIFY=OFF: skipping patchify, patchify_c and patchify_cli targets")
+    install(TARGETS patchify
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+endif()

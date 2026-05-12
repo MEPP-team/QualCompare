@@ -193,7 +193,8 @@ Use this checklist when starting on a fresh workstation or after a long pause.
    - `DefaultOutputRoot`
 9. Confirm that the bundled script path resolves to `scripts/render_single.py` from the application output.
 10. Run a small OBJ render smoke test.
-11. Run a patchify smoke test on a rendered result.
+  - Use `--no-patchify` if you only want to validate rendering.
+11. Run a patchify smoke test on a rendered result if you want to validate the post-render extraction step separately.
 
 ### Suggested smoke test
 
@@ -246,7 +247,13 @@ Benefits:
 
 ```bash
 # Configure (from repository root)
+# By default patchify targets are built. To skip building the native
+# patchify binaries (for example on machines without OpenCV or when you
+# only need the managed projects), pass -DBUILD_PATCHIFY=OFF.
 cmake -S patchify -B patchify/build
+
+# To disable building patchify targets:
+cmake -S patchify -B patchify/build -DBUILD_PATCHIFY=OFF
 
 # Build all targets (Debug)
 cmake --build patchify/build --config Debug
@@ -256,6 +263,17 @@ cmake --build patchify/build --config Debug --target patchify_cli
 
 # Install to system or custom location (optional)
 cmake --install patchify/build --config Debug --prefix /opt/patchify
+
+# Notes:
+- By default the CMake configuration builds `patchify`, `patchify_c` (shared
+  C API) and `patchify_cli`. If you disable `BUILD_PATCHIFY`, the shared
+  library and CLI are skipped and only the core static `patchify` target is
+  configured (useful for minimal native-only work or dependency-limited
+  environments).
+
+# After installing, ensure the runtime library is discoverable by the
+# application (copy next to the CLI executable or set `LD_LIBRARY_PATH` /
+# `PATH` / `DYLD_LIBRARY_PATH` accordingly).
 ```
 
 **Windows with OpenCV:**

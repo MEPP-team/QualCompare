@@ -167,6 +167,16 @@ public class BlenderRenderService
     }
 
     /// <summary>
+    /// Returns the folder that Blender writes for a rendered object.
+    /// </summary>
+    public string GetRenderedObjectOutputFolder(string objectPath)
+    {
+        var objectName = Path.GetFileNameWithoutExtension(objectPath);
+        var outputRoot = _config.TempOutputRoot ?? _config.OutputDir;
+        return Path.Combine(outputRoot, objectName);
+    }
+
+    /// <summary>
     /// Discovers all objects matching the configured criteria (obj_type, file_type).
     /// </summary>
     public string[] DiscoverObjects()
