@@ -27,10 +27,6 @@ QualCompare is a cross-platform application for reproducible multi-view renderin
 - Cross-platform .NET 8+ runtime
 - Command-line tool: [QualCompareCLI/README.md](QualCompareCLI/README.md) with platform-specific setup
 
-**WSL (Windows Subsystem for Linux):**
-- Supported for CLI usage; follow the Linux setup in [QualCompareCLI/README.md](QualCompareCLI/README.md)
-- Note: Some WSL environments may require software-rendering fallbacks for Blender, which can reduce performance compared to native GPU-accelerated rendering
-
 ## Main features
 
 - Multi-view rendering with Blender
