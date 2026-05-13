@@ -359,9 +359,6 @@ The `sample_data/quick_test/source/` tree includes small fixtures that are usefu
 - `sample_data/quick_test/source/Bread/source/` contains texture/material assets for a Bread sample.
 - `sample_data/quick_test/source/baluster-vase-one-of-three-in-a-five-piece/source/` contains texture/material assets for a vase sample.
 
-The `.obj` geometry files are not present in this snapshot, so these assets are best used as supporting files or paired with your own mesh files.
-
-
 ## Output structure
 
 For each rendered object, the CLI creates:
