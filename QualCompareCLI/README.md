@@ -75,6 +75,7 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
    # Or use snap
    sudo snap install blender --classic
    ```
+Be careful to get a version of Blender recommended above 4.4.
 
 3. **Install Python packages in Blender's environment**
    
@@ -91,7 +92,7 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
 4. **Build QualCompareCLI**
    ```bash
    dotnet build
-   dotnet publish -c Release -o ./bin/release
+   dotnet publish -c Release -o ./bin/Release
    ```
    Output: `bin/release/qualcompare-cli`
 
