@@ -262,7 +262,7 @@ namespace QualCompare
                 .Where(path =>
                 {
                     string lowerPath = path.ToLowerInvariant();
-                    string[] sourceKeywords = { "source", "ref", "reference", "src" };
+                    string[] sourceKeywords = { "source", "ref", "reference", "src", "original", "originals", "org" };
                     bool isSource = sourceKeywords.Any(k => lowerPath.Split(Path.DirectorySeparatorChar).Any(seg => seg == k || seg.StartsWith(k + "_")));
                     // If we selected "source", we want only files in paths containing source keywords.
                     // If we selected "distorted", we want only files NOT in paths containing source keywords.

@@ -193,7 +193,7 @@ public class BlenderRenderService
                     return true;
 
                 string lowerPath = path.ToLowerInvariant();
-                string[] sourceKeywords = { "source", "ref", "reference", "src" };
+                string[] sourceKeywords = { "source", "ref", "reference", "src", "original", "originals" };
                 bool isSource = sourceKeywords.Any(k =>
                     lowerPath.Split(Path.DirectorySeparatorChar).Any(seg =>
                         seg == k || seg.StartsWith(k + "_")));

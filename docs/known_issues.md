@@ -44,6 +44,8 @@ It currently relies on path keywords such as:
 - `ref`
 - `reference`
 - `src`
+- `original`
+- `originals`
 
 Datasets that do not follow these conventions may be misclassified by the `source` / `distorted` filter.
 

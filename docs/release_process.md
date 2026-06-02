@@ -14,6 +14,7 @@
 2. Verify that `bin/Release` contains:
    - `QualCompare.exe`
    - `PatchifyWrapper.dll`
+   - `opencv_world*.dll`
    - `scripts/render_single.py`
    - `scripts/positions.py`
    - `resources/Models_characteristics_and_settings.csv`

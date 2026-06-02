@@ -34,6 +34,8 @@ In `RenderQueue.cs`, a file is considered source-like when one of its path segme
 - `ref`
 - `reference`
 - `src`
+- `original`
+- `originals`
 
 Any matching limitations in dataset naming can therefore affect experiment selection.
 

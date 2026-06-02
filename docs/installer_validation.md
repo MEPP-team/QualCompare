@@ -68,6 +68,7 @@ Before running the installer test:
 - verify the setup includes:
   - `QualCompare.exe`
   - `PatchifyWrapper.dll`
+  - `opencv_world*.dll`
   - `scripts\render_single.py`
   - `scripts\positions.py`
   - `resources\Models_characteristics_and_settings.csv`
@@ -85,6 +86,7 @@ After launching the installer:
 4. confirm installed directory contains:
    - `QualCompare.exe`
    - required managed DLLs
+   - `opencv_world*.dll`
    - `scripts\render_single.py`
    - `scripts\positions.py`
    - `resources\Models_characteristics_and_settings.csv`

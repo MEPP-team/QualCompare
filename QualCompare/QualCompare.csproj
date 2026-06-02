@@ -146,5 +146,22 @@
   <ItemGroup>
     <Folder Include="resources\" />
   </ItemGroup>
+  <PropertyGroup>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\include\opencv2\opencv.hpp')">$(OPENCV_DIR)</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('$(OPENCV_DIR)\..\..\include\opencv2\opencv.hpp')">$(OPENCV_DIR)\..\..</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\Program Files\opencv\build\include\opencv2\opencv.hpp')">C:\Program Files\opencv\build</OpenCvBuildDir>
+    <OpenCvBuildDir Condition="'$(OpenCvBuildDir)'=='' and Exists('C:\Program Files (x86)\opencv\build\include\opencv2\opencv.hpp')">C:\Program Files (x86)\opencv\build</OpenCvBuildDir>
+  </PropertyGroup>
+  <Target Name="CopyOpenCvRuntime" AfterTargets="Build" Condition="'$(OpenCvBuildDir)'!=''">
+    <ItemGroup Condition="'$(Configuration)'=='Debug'">
+      <OpenCvRuntimeDll Include="$(OpenCvBuildDir)\x64\vc17\bin\opencv_world*d.dll" Condition="Exists('$(OpenCvBuildDir)\x64\vc17\bin')" />
+      <OpenCvRuntimeDll Include="$(OpenCvBuildDir)\x64\vc16\bin\opencv_world*d.dll" Condition="Exists('$(OpenCvBuildDir)\x64\vc16\bin')" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)'!='Debug'">
+      <OpenCvRuntimeDll Include="$(OpenCvBuildDir)\x64\vc17\bin\opencv_world*.dll" Exclude="$(OpenCvBuildDir)\x64\vc17\bin\opencv_world*d.dll" Condition="Exists('$(OpenCvBuildDir)\x64\vc17\bin')" />
+      <OpenCvRuntimeDll Include="$(OpenCvBuildDir)\x64\vc16\bin\opencv_world*.dll" Exclude="$(OpenCvBuildDir)\x64\vc16\bin\opencv_world*d.dll" Condition="Exists('$(OpenCvBuildDir)\x64\vc16\bin')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(OpenCvRuntimeDll)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="'@(OpenCvRuntimeDll)'!=''" />
+  </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

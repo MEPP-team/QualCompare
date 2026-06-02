@@ -68,7 +68,7 @@ Complete reference for render job configuration in JSON format.
 - **Allowed values:** `"everything"`, `"source"`, `"distorted"`
 - **Description:** File filtering strategy based on folder names
   - `"everything"`: Render all files
-  - `"source"`: Only files in paths containing `source`, `ref`, `reference`, or `src`
+  - `"source"`: Only files in paths containing `source`, `ref`, `reference`, `src`, `original`, or `originals`
   - `"distorted"`: Only files NOT in source paths
 
 #### `positionsType`
