@@ -17,6 +17,8 @@
 /patchify/cmake_install.cmake
 /patchify/Makefile
 /patchify/compile_commands.json
+# Local QualCompare files
+/QualCompare/local/
 # Generated project summaries not meant for the public repo
 /MODIFICATIONS_FR.md
 /docs/patchify_portability.md

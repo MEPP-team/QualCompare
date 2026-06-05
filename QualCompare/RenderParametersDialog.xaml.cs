@@ -99,18 +99,47 @@ namespace QualCompare
         // Floats like: 123, -123, 12.3, -0.5 (single dot, optional leading minus)
         private void floatInput_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            string text = sender is TextBox tb ? tb.Text : string.Empty;
-            string newText = string.Concat(text, e.Text);
+            if (!(sender is TextBox textBox))
+            {
+                e.Handled = true;
+                return;
+            }
 
-            // Reject multiple dots
-            if (e.Text == "." && text.Contains(".")) { e.Handled = true; return; }
-            // Dot cannot be first char (disallow ".5" -> require "0.5")
-            if (e.Text == "." && text.Length == 0) { e.Handled = true; return; }
-            // Only one leading minus
-            if (e.Text == "-" && text.Length > 0) { e.Handled = true; return; }
-            // Disallow characters other than digits, dot, minus
-            bool okChar = int.TryParse(e.Text, out _) || e.Text == "." || e.Text == "-";
-            if (!okChar) { e.Handled = true; return; }
+            string input = e.Text.Replace(',', '.');
+            string newText = textBox.Text
+                .Remove(textBox.SelectionStart, textBox.SelectionLength)
+                .Insert(textBox.SelectionStart, input);
+
+            e.Handled = !IsValidPartialFloat(newText);
+            if (!e.Handled && input != e.Text)
+            {
+                textBox.SelectedText = input;
+                e.Handled = true;
+            }
+        }
+
+        private static bool IsValidPartialFloat(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text == "-")
+                return true;
+
+            if (text[0] == '-')
+                text = text.Substring(1);
+
+            bool hasDot = false;
+            foreach (char c in text)
+            {
+                if (char.IsDigit(c))
+                    continue;
+                if (c == '.' && !hasDot)
+                {
+                    hasDot = true;
+                    continue;
+                }
+                return false;
+            }
+
+            return true;
         }
 
         // -----------------------
@@ -243,10 +272,20 @@ namespace QualCompare
         // OK/Cancel
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            // If TextBoxes are two-way bound to DataContext properties, setting Text above
-            // already updated the DataContext. Simply close dialog with OK.
+            UpdateFloatBindingSource(FilterSizeNumericDlg);
+            UpdateFloatBindingSource(SunEnergyNumericDlg);
+            UpdateFloatBindingSource(SunThetaNumericDlg);
+            UpdateFloatBindingSource(SunPhiNumericDlg);
+            UpdateFloatBindingSource(PointRadiusFractionNumericDlg);
+            UpdateFloatBindingSource(VoxelRadiusMultiplierNumericDlg);
+
             DialogResult = true;
             Close();
+        }
+
+        private static void UpdateFloatBindingSource(TextBox textBox)
+        {
+            textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
         }
     }
 }

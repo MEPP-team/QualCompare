@@ -199,7 +199,7 @@
                         <TextBlock Grid.Row="4" Text="Filter Size" Margin="0,0,8,0"/>
                         <TextBox x:Name="FilterSizeNumericDlg"
                      Grid.Row="4" Grid.Column="1"
-                     Text="{Binding FilterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding FilterSize, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
 
                         <TextBlock Grid.Row="5" Text="Mask Threshold" Margin="0,0,8,0"/>
@@ -229,19 +229,19 @@
                         <TextBlock Text="Sun Energy" Margin="0,0,8,0"/>
                         <TextBox x:Name="SunEnergyNumericDlg"
                      Grid.Column="1"
-                     Text="{Binding SunEnergy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding SunEnergy, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
 
                         <TextBlock Grid.Row="1" Text="Sun Theta" Margin="0,0,8,0"/>
                         <TextBox x:Name="SunThetaNumericDlg"
                      Grid.Row="1" Grid.Column="1"
-                     Text="{Binding SunTheta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding SunTheta, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
 
                         <TextBlock Grid.Row="2" Text="Sun Phi" Margin="0,0,8,0"/>
                         <TextBox x:Name="SunPhiNumericDlg"
                      Grid.Row="2" Grid.Column="1"
-                     Text="{Binding SunPhi, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding SunPhi, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
                     </Grid>
                 </GroupBox>
@@ -274,7 +274,7 @@
                         <TextBlock Grid.Row="1" Text="Point Radius Fraction" Margin="0,0,8,0"/>
                         <TextBox x:Name="PointRadiusFractionNumericDlg"
                      Grid.Row="1" Grid.Column="1"
-                     Text="{Binding PointRadiusFraction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding PointRadiusFraction, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
 
                         <TextBlock Grid.Row="2" Text="PLY Voxel Bits" Margin="0,0,8,0"/>
@@ -287,7 +287,7 @@
                         <TextBlock Grid.Row="3" Text="Voxel Radius Multiplier" Margin="0,0,8,0"/>
                         <TextBox x:Name="VoxelRadiusMultiplierNumericDlg"
                      Grid.Row="3" Grid.Column="1"
-                     Text="{Binding VoxelRadiusMultiplier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding VoxelRadiusMultiplier, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                      PreviewTextInput="floatInput_PreviewTextInput"/>
                     </Grid>
                 </GroupBox>

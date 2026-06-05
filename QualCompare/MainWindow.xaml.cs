@@ -583,22 +583,47 @@ namespace QualCompare
 
         void floatInput_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            string text = sender is TextBox textBox ? textBox.Text : string.Empty;
-            string newText = string.Concat(text, e.Text);
-            if (newText.Contains(".") || newText.Contains("-"))
+            if (!(sender is TextBox textBox))
             {
-                int dotIndex = newText.IndexOf('.');
-                int dashIndex = newText.IndexOf('-');
-                if (Math.Abs(dotIndex - dashIndex) == 2 || (dashIndex == 0 && dotIndex == -1))
-                    e.Handled = false;
-                else
-                    e.Handled = true;
+                e.Handled = true;
+                return;
             }
-            e.Handled |= !(int.TryParse(e.Text, out int value) || e.Text == "." || e.Text == "-");
-            e.Handled |= (e.Text == "." && text.Contains("."));
-            e.Handled |= (e.Text == "." && text.Length == 0);
-            e.Handled |= (e.Text == "-" && text.Length > 0);
-            e.Handled |= (e.Text == "." && text.Length == 1 && text[0] == '-');
+
+            string input = e.Text.Replace(',', '.');
+            string newText = textBox.Text
+                .Remove(textBox.SelectionStart, textBox.SelectionLength)
+                .Insert(textBox.SelectionStart, input);
+
+            e.Handled = !IsValidPartialFloat(newText);
+            if (!e.Handled && input != e.Text)
+            {
+                textBox.SelectedText = input;
+                e.Handled = true;
+            }
+        }
+
+        private static bool IsValidPartialFloat(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text == "-")
+                return true;
+
+            if (text[0] == '-')
+                text = text.Substring(1);
+
+            bool hasDot = false;
+            foreach (char c in text)
+            {
+                if (char.IsDigit(c))
+                    continue;
+                if (c == '.' && !hasDot)
+                {
+                    hasDot = true;
+                    continue;
+                }
+                return false;
+            }
+
+            return true;
         }
 
         private void UpdateMethodSpecificControls()
