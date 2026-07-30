@@ -1,4 +1,4 @@
-# QOMEX Reproduction Guide
+# Reproduction Guide
 
 This document records the step-by-step protocol for reproducing the paper workflow that depends on QualCompare and Graphics-LPIPS-QualCompare.
 

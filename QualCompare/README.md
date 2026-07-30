@@ -29,7 +29,7 @@ Important:
 
 ## Installation
 
-## Option 1 - Recommended: install with the Windows setup
+### Option 1 - Recommended: install with the Windows setup
 
 If you are using a release package or a local clone:
 
@@ -43,7 +43,7 @@ On first launch, the application creates its configuration automatically.
 
 If Blender is already installed, QualCompare may detect it automatically. If not, you will be asked to select `blender.exe` manually in the application settings.
 
-## Option 2 - Run from a development build
+### Option 2 - Run from a development build
 
 If you are using a locally built version:
 
@@ -65,7 +65,7 @@ If you are using a locally built version:
 
 Use this section if you want to check quickly that QualCompare works on your machine.
 
-1. Install Blender 5.0+ on Windows. 
+1. Install Blender 5.0+ on Windows.
 2. Launch QualCompare.
 3. If asked, select your `blender.exe`.
 4. Choose a small folder containing one `.obj` file.
@@ -84,8 +84,8 @@ object_name/
     masks/
 ```
 
-1. Open the Patchify area and run patch extraction on one rendered image or folder.
-1. Confirm that patch CSV output is created.
+9. Open the Patchify area and run patch extraction on one rendered image or folder.
+10. Confirm that patch CSV output is created.
 
 If this quick test works, the application is ready for larger datasets and longer experiments.
 
@@ -223,7 +223,7 @@ The current source/distorted detection is heuristic and based on folder names su
 If you need the exact bridge between QualCompare and Graphics-LPIPS-QualCompare, or a step-by-step reproduction protocol for the paper workflow, see:
 
 - [docs/graphics_lpips_bridge.md](../docs/graphics_lpips_bridge.md)
-- [docs/qomex_reproduction.md](../docs/qomex_reproduction.md)
+- [docs/replication.md](../docs/replication.md)
 
 ---
 
@@ -284,7 +284,7 @@ Patchify relies on the existing render structure, especially the sibling `views/
 
 ## Troubleshooting
 
-## Blender not found
+### Blender not found
 
 Symptoms:
 
@@ -298,7 +298,7 @@ What to do:
 3. Save the path.
 4. Retry the render.
 
-## Render script not found
+### Render script not found
 
 Symptoms:
 
@@ -309,7 +309,7 @@ What to do:
 - verify that the installed application contains `scripts\render_single.py`
 - if you are using a local build, make sure the script was copied to the output folder
 
-## `cv2` import error inside Blender
+### `cv2` import error inside Blender
 
 Symptoms:
 
@@ -317,10 +317,10 @@ Symptoms:
 
 What to do:
 
-- install `opencv-python` in Blender's Python environment
+- install `opencv-python==4.11.0.86` into Blender's Python environment (see "If Blender Python is missing `cv2`" above)
 - restart QualCompare and try again
 
-## Missing textures
+### Missing textures
 
 Symptoms:
 
@@ -331,7 +331,7 @@ What to do:
 - keep `.obj`, `.mtl`, and textures in a consistent relative layout
 - verify that the material file references the texture files correctly
 
-## Rendering is very slow
+### Rendering is very slow
 
 Symptoms:
 
@@ -344,7 +344,7 @@ What to do:
 - test on a smaller subset first
 - close other heavy applications
 
-## Masks are empty or wrong
+### Masks are empty or wrong
 
 Symptoms:
 
@@ -356,7 +356,7 @@ What to do:
 - test another object from the same dataset
 - confirm that Blender imported the object correctly
 
-## Patchify does not produce usable output
+### Patchify does not produce usable output
 
 Symptoms:
 
@@ -370,7 +370,7 @@ What to do:
 - confirm that `views/` and `masks/` exist for the object
 - confirm filenames follow the expected `view_N` and `mask_N` pattern
 
-## Patchify wrapper DLL cannot be loaded
+### Patchify wrapper DLL cannot be loaded
 
 Symptoms:
 
@@ -395,17 +395,6 @@ What to do:
 
 ---
 
-## Citation
-
-If you use this software in research, please cite the corresponding work:
-
-```text
-Towards Reproducible Image-based 3D Quality Assessment:
-Integrated Software and New Results
-```
-
----
-
 ## License
 
-Research software for internal or academic use.
+This project is distributed under the GNU General Public License v3.0 (GPL-3.0). See the [`LICENSE.md`](../LICENSE.md) file for details.

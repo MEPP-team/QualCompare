@@ -79,7 +79,7 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
    # Or use snap
    sudo snap install blender --classic
    ```
-Be careful to get a version of Blender recommended 5.0 or above.
+Note: the Blender packaged in Ubuntu's `apt` repositories is often **older than 5.0**. Prefer `snap install blender --classic` (tracks the latest) or download Blender 5.0+ from [blender.org](https://www.blender.org), and set `blenderPath` accordingly.
 
 3. **Install Python packages in Blender's environment**
    

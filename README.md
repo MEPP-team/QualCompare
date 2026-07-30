@@ -43,7 +43,7 @@ QualCompare is a cross-platform application for reproducible multi-view renderin
 ## License
 
 This project is distributed under the GNU General Public License v3.0.
-See the `LICENSE` file for details.
+See the [`LICENSE.md`](LICENSE.md) file for details.
 
 ## Status
 
