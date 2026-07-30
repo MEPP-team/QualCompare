@@ -356,6 +356,20 @@ See `examples/render_ply_voxel_windows.json`
 qualcompare-cli --config examples/render_ply_voxel_windows.json
 ```
 
+### Paper reproduction configs (Table 7)
+
+The `examples/paper_*_8v_yfixed.json` files capture the exact render settings used for the paper's Table 7 (8 views, `yfixed` sampling, TAA 16, filter size 1.5, plus the per-dataset resolution / lighting / point radius from Table 6):
+
+| Config | Dataset | Type | Resolution | (θ, φ) | Point radius |
+|--------|---------|------|-----------|--------|--------------|
+| `paper_TMQ_8v_yfixed.json` | TMQ | mesh | 650×550 | (30, 50) | — |
+| `paper_TSMD_8v_yfixed.json` | TSMD | mesh | 650×550 | (30, 50) | — |
+| `paper_SJTU-TMQA_8v_yfixed.json` | SJTU-TMQA | mesh | 1920×1080 | (0, 0) | — |
+| `paper_BASICS_8v_yfixed.json` | BASICS | point cloud | 960×960 | — | 0.003 |
+| `paper_WPC_8v_yfixed.json` | WPC | point cloud | 960×960 | — | 0.001 |
+
+Paths (`blenderPath`, `inputDir`, ...) are placeholders — fill them with `scripts/fill_render_config_paths.py` or edit them by hand. Lighting angles do not affect point-cloud renders (points use an emissive material), so they are left at defaults for BASICS/WPC.
+
 ### Test assets
 
 The `sample_data/quick_test/source/` tree includes small fixtures that are useful for smoke tests:
