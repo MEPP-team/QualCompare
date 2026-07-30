@@ -135,7 +135,7 @@ This split is real and contributors should preserve it unless they are intention
 - Visual Studio workloads for:
   - .NET desktop development
   - Desktop development with C++
-- .NET Framework 4.8.1 targeting pack
+- .NET Framework 4.8.1 targeting pack (Developer Pack) — install with `winget install Microsoft.DotNet.Framework.DeveloperPack_4`, or via Visual Studio Installer → Individual components → ".NET Framework 4.8.1 targeting pack". If it is missing, the build fails with `MSB3644`.
 - MSVC v143 toolset
 - Blender 5.0+ installed separately
 - OpenCV native installation for `patchify/` and `PatchifyWrapper/`

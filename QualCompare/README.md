@@ -10,7 +10,7 @@ It is designed for research usage on meshes and point clouds, with a practical G
 
 - Windows 10 or Windows 11
 - Blender 5.0 or higher installed on the machine
-- .NET Framework 4.8.1 available
+- .NET Framework 4.8.1 runtime (to run the app; building from source additionally needs the Developer Pack — see Option 2)
 - enough free disk space for rendered outputs and temporary files
 
 Recommended for large datasets:
@@ -46,6 +46,12 @@ If Blender is already installed, QualCompare may detect it automatically. If not
 ## Option 2 - Run from a development build
 
 If you are using a locally built version:
+
+> **Build prerequisites:** Visual Studio 2022 with the *Desktop development with C++* and *.NET desktop development* workloads, plus the **.NET Framework 4.8.1 Developer Pack** (targeting pack). Without the Developer Pack, the build fails with `MSB3644` ("reference assemblies for .NETFramework 4.8.1 not found"). Install it with:
+> ```powershell
+> winget install Microsoft.DotNet.Framework.DeveloperPack_4
+> ```
+> or via Visual Studio Installer → Individual components → ".NET Framework 4.8.1 targeting pack".
 
 1. Open `QualCompare/QualCompare.sln` in Visual Studio 2022.
 2. Restore NuGet packages. Visual Studio does this automatically when the solution is opened; for command-line builds, run `nuget restore QualCompare.sln` first (the `packages/` folder is not committed and is recreated by the restore).
