@@ -48,11 +48,12 @@ If Blender is already installed, QualCompare may detect it automatically. If not
 If you are using a locally built version:
 
 1. Open `QualCompare/QualCompare.sln` in Visual Studio 2022.
-2. Select `Release | x64` (or `Debug | x64` for development).
-3. Build the full solution (Build > Build Solution).
-4. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
-5. On first launch, let the application create its initial configuration.
-6. Verify that Blender and the bundled render script are correctly detected.
+2. Restore NuGet packages. Visual Studio does this automatically when the solution is opened; for command-line builds, run `nuget restore QualCompare.sln` first (the `packages/` folder is not committed and is recreated by the restore).
+3. Select `Release | x64` (or `Debug | x64` for development).
+4. Build the full solution (Build > Build Solution).
+5. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
+6. On first launch, let the application create its initial configuration.
+7. Verify that Blender and the bundled render script are correctly detected.
 
 ## 5-minute quick start
 

@@ -23,6 +23,8 @@
 /MODIFICATIONS_FR.md
 /docs/patchify_portability.md
 /docs/patchify_wrapper_strategy.md
+# NuGet packages: restored via `nuget restore`, not committed
+**/packages/
 # Excluding specific file types
 *.pdb
 *.pch
