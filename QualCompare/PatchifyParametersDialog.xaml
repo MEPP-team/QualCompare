@@ -1,7 +1,7 @@
 ﻿<Window x:Class="QualCompare.PatchifyParametersDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Patchify Parameters"
+        Title="Patchify Parameters (read-only)"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         SizeToContent="WidthAndHeight"
@@ -19,22 +19,31 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Patch Size" Margin="0,0,8,0" Padding="0,0,0,5"/>
-            <TextBox Grid.Column="1" Text="{Binding PatchSize}" MinWidth="75" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" Text="{Binding PatchSize}" MinWidth="75" VerticalAlignment="Center"
+                     IsReadOnly="True" Focusable="False" Background="#F0F0F0"/>
 
             <TextBlock Grid.Row="1" Text="Step X" Margin="0,0,8,5"/>
-            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PatchStepX}" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PatchStepX}" VerticalAlignment="Center"
+                     IsReadOnly="True" Focusable="False" Background="#F0F0F0"/>
 
             <TextBlock Grid.Row="2" Text="Step Y" Margin="0,0,8,0" Padding="0,0,0,5"/>
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PatchStepY}" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PatchStepY}" VerticalAlignment="Center"
+                     IsReadOnly="True" Focusable="False" Background="#F0F0F0"/>
 
             <TextBlock Grid.Row="3" Text="Overlap Threshold" Margin="0,0,8,5"/>
-            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PatchOverlapThreshold}" VerticalAlignment="Center"/>
-            <StackPanel Grid.Row="4" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                <Button Content="Cancel" Width="75" Margin="0,8,0,0" IsCancel="True"/>
-                <Button Content="OK" Width="75" Margin="8,8,0,0" IsDefault="True" Click="Ok_Click"/>
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PatchOverlapThreshold}" VerticalAlignment="Center"
+                     IsReadOnly="True" Focusable="False" Background="#F0F0F0"/>
+
+            <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="0,10,0,0" MaxWidth="330"
+                       HorizontalAlignment="Left" TextWrapping="Wrap" Foreground="#666" FontSize="11"
+                       Text="These values are fixed at build time in patchify.cpp (patchifyImage) and are not configurable at runtime. To change them, edit the defaults and rebuild patchify_c / PatchifyWrapper."/>
+
+            <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Button Content="Close" Width="75" Margin="0,10,0,0" IsCancel="True" IsDefault="True"/>
             </StackPanel>
         </Grid>
 

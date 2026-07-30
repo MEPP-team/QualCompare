@@ -9,7 +9,7 @@ It is designed for research usage on meshes and point clouds, with a practical G
 ## System requirements
 
 - Windows 10 or Windows 11
-- Blender 4.4 or higher installed on the machine
+- Blender 5.0 or higher installed on the machine
 - .NET Framework 4.8.1 available
 - enough free disk space for rendered outputs and temporary files
 
@@ -58,7 +58,7 @@ If you are using a locally built version:
 
 Use this section if you want to check quickly that QualCompare works on your machine.
 
-1. Install Blender 4.x on Windows. (4.4+ recommended)
+1. Install Blender 5.0+ on Windows. 
 2. Launch QualCompare.
 3. If asked, select your `blender.exe`.
 4. Choose a small folder containing one `.obj` file.
@@ -139,7 +139,7 @@ If Blender is not detected automatically:
 Typical Blender path:
 
 ```text
-C:\Program Files\Blender Foundation\Blender 4.x\blender.exe
+C:\Program Files\Blender Foundation\Blender 5.0\blender.exe
 ```
 
 ---
@@ -151,7 +151,7 @@ The rendering pipeline uses OpenCV inside Blender's Python environment for mask 
 If rendering fails because `cv2` is missing, install it into Blender's Python environment. A typical Windows procedure is:
 
 ```powershell
-cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
+cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"
 .\python.exe -m ensurepip
 .\python.exe -m pip install --upgrade pip
 .\python.exe -m pip install --force-reinstall opencv-python

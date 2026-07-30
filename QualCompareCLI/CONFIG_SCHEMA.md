@@ -37,7 +37,7 @@ Complete reference for render job configuration in JSON format.
 - **Examples:**
   - Linux: `/usr/bin/blender` or `/snap/bin/blender`
   - macOS: `/Applications/Blender.app/Contents/MacOS/blender`
-  - Windows: `C:\Program Files\Blender Foundation\Blender 4.4\blender.exe`
+  - Windows: `C:\Program Files\Blender Foundation\Blender 5.0\blender.exe`
 
 #### `renderScriptPath`
 - **Type:** string
@@ -129,7 +129,7 @@ Nested object controlling Blender rendering settings.
 "render": {
   "resX": 650,
   "resY": 550,
-  "engine": "BLENDER_EEVEE_NEXT",
+  "engine": "BLENDER_EEVEE",
   "taa": 64,
   "filterSize": 1.5,
   "maskThreshold": 10,
@@ -144,7 +144,7 @@ Nested object controlling Blender rendering settings.
 |-------|------|---------|-------------|
 | `resX` | number | 650 | Horizontal resolution (pixels) |
 | `resY` | number | 550 | Vertical resolution (pixels) |
-| `engine` | string | `"BLENDER_EEVEE_NEXT"` | Render engine name |
+| `engine` | string | `"BLENDER_EEVEE"` | Render engine name |
 | `taa` | number | 64 | Temporal anti-aliasing samples |
 | `filterSize` | number | 1.5 | Pixel filter size |
 | `maskThreshold` | number | 10 | Binary mask threshold (0-255) |
@@ -195,7 +195,7 @@ All other fields use defaults. Renders OBJ files with Fibonacci 12 views.
 ```json
 {
   "schemaVersion": "1.0",
-  "blenderPath": "C:\\Program Files\\Blender Foundation\\Blender 4.4\\blender.exe",
+  "blenderPath": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
   "renderScriptPath": "C:\\Users\\myuser\\QualCompare-public\\obj2png\\render_single.py",
   "inputDir": "D:\\Datasets\\PointClouds",
   "outputDir": "D:\\Outputs\\Voxels",

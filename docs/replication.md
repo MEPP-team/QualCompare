@@ -68,7 +68,7 @@ Then pin the protocol values used by the paper:
 For the current repository baseline, the code defaults currently visible in `QualCompare/MainWindow.xaml.cs` are:
 
 - resolution: 650 x 550
-- render engine: `BLENDER_EEVEE_NEXT`
+- render engine: `BLENDER_EEVEE`
 - TAA samples: 64
 - filter size: 1.5
 - sun theta: 30

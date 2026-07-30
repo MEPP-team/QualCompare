@@ -17,7 +17,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 ### System Requirements
 
 - .NET 8 SDK or later
-- Blender 4.x installed separately (not bundled)
+- Blender 5.0+ installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
 - For the default render pipeline, and for `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
 
@@ -26,7 +26,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 Before the first test run, make sure you have:
 
 1. `.NET 8`
-2. `Blender 4.x`
+2. `Blender 5.0+`
 3. `opencv-python` and `numpy` inside Blender's Python environment
 4. `patchify_c` available if you want the default render pipeline to patchify outputs or if you want to use `--patchify`
 
@@ -36,13 +36,13 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
 
 #### Windows
 
-1. **Install Blender 4.4+**
+1. **Install Blender 5.0+**
    - Download from [blender.org](https://www.blender.org)
    - Use default installation path or note your custom path
 
 2. **Install OpenCV in Blender's Python**
    ```powershell
-   cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
+   cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"
    .\python.exe -m ensurepip
    .\python.exe -m pip install --upgrade pip
    .\python.exe -m pip install opencv-python numpy
@@ -75,7 +75,7 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
    # Or use snap
    sudo snap install blender --classic
    ```
-Be careful to get a version of Blender recommended above 4.4.
+Be careful to get a version of Blender recommended 5.0 or above.
 
 3. **Install Python packages in Blender's environment**
    
@@ -386,7 +386,7 @@ Check the `blenderPath` in your JSON configuration. Examples:
 
 - **Linux**: `/usr/bin/blender` or `/snap/bin/blender`
 - **macOS**: `/Applications/Blender.app/Contents/MacOS/blender`
-- **Windows**: `C:\Program Files\Blender Foundation\Blender 4.4\blender.exe`
+- **Windows**: `C:\Program Files\Blender Foundation\Blender 5.0\blender.exe`
 
 ### "Render script not found"
 
@@ -410,7 +410,7 @@ Install OpenCV in Blender's Python:
 /path/to/blender/python/bin/python -m pip install opencv-python
 
 # Windows
-"C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin\python.exe" -m pip install opencv-python
+"C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin\python.exe" -m pip install opencv-python
 ```
 
 ## Integration with GUI
