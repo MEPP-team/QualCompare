@@ -791,7 +791,7 @@ def main():
     parser.add_argument(
         "--positions_type",
         type=str,
-        choices=["yfixed", "fibonacci", "polyedric"],
+        choices=["yfixed", "fibonacci", "polyedric", "polyhedric"],
         default="yfixed",
         help="Camera position sampling strategy.",
     )
