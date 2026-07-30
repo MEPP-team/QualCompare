@@ -27,7 +27,7 @@ Before the first test run, make sure you have:
 
 1. `.NET 8`
 2. `Blender 5.0+`
-3. `opencv-python` and `numpy` inside Blender's Python environment
+3. `opencv-python==4.11.0.86` inside Blender's Python environment (numpy is bundled with Blender)
 4. `patchify_c` available if you want the default render pipeline to patchify outputs or if you want to use `--patchify`
 
 For a quick first render-only test, you only need items 1 to 3 and you should pass `--no-patchify`. If you want the default full pipeline, install item 4 too.
@@ -40,14 +40,18 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
    - Download from [blender.org](https://www.blender.org)
    - Use default installation path or note your custom path
 
-2. **Install OpenCV in Blender's Python**
+2. **Install OpenCV in Blender's Python** — run PowerShell **as Administrator** (it writes into `Program Files`)
    ```powershell
-   cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"
+   cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"   # adjust the version in the path
    .\python.exe -m ensurepip
    .\python.exe -m pip install --upgrade pip
-   .\python.exe -m pip install opencv-python numpy
+   .\python.exe -m pip install "opencv-python==4.11.0.86"
+   .\python.exe -c "import cv2; print(cv2.__version__)"   # should print 4.11.0
    ```
-   (Adjust version number as needed)
+   Notes:
+   - **Pin** `opencv-python==4.11.0.86`. The newest/unpinned wheel currently imports but fails to load its functions inside Blender's Python.
+   - Do **not** install `numpy` here — Blender bundles it. `opencv-python 4.11` requires numpy ≥ 2, which Blender 5.0+ provides (another reason to use Blender ≥ 5.0).
+   - If the terminal is **not** elevated, pip installs into the per-user site, which Blender ignores (see Troubleshooting).
 
 3. **Build QualCompareCLI**
    ```powershell
@@ -86,7 +90,7 @@ Be careful to get a version of Blender recommended 5.0 or above.
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
    "$BLENDER_PY" -m pip install --upgrade pip
-   "$BLENDER_PY" -m pip install opencv-python numpy
+   "$BLENDER_PY" -m pip install "opencv-python==4.11.0.86"   # numpy is bundled by Blender (5.0+ provides numpy 2)
    ```
 
 4. **Build QualCompareCLI**
@@ -114,7 +118,7 @@ Be careful to get a version of Blender recommended 5.0 or above.
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
    "$BLENDER_PY" -m pip install --upgrade pip
-   "$BLENDER_PY" -m pip install opencv-python numpy
+   "$BLENDER_PY" -m pip install "opencv-python==4.11.0.86"   # numpy is bundled by Blender (5.0+ provides numpy 2)
    ```
 
 3. **Build QualCompareCLI**
@@ -403,15 +407,24 @@ Check that:
 
 ### Blender Python `cv2` import error
 
-Install OpenCV in Blender's Python:
+Install OpenCV in Blender's Python (pin the version):
 
 ```bash
 # Linux/macOS
-/path/to/blender/python/bin/python -m pip install opencv-python
+/path/to/blender/python/bin/python -m pip install "opencv-python==4.11.0.86"
 
-# Windows
-"C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin\python.exe" -m pip install opencv-python
+# Windows (run the terminal as Administrator)
+"C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin\python.exe" -m pip install "opencv-python==4.11.0.86"
 ```
+
+If Blender still reports `No module named 'cv2'` (or `cv2` imports but has no functions) after a successful install:
+
+- The install likely went to the **per-user site** (non-admin terminal), which Blender ignores. Re-run the terminal **as Administrator**.
+- If you installed with `pip --target` under `Program Files`, the files may have permissions the normal user cannot read. Reset them (Administrator):
+  ```powershell
+  icacls "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\Lib\site-packages\cv2" /reset /T
+  ```
+- `opencv-python 4.11` requires **numpy ≥ 2** (provided by Blender 5.0+). On Blender 4.x (numpy 1.x) the import fails — use **Blender ≥ 5.0**.
 
 ## Integration with GUI
 

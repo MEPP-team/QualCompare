@@ -168,7 +168,7 @@ The current project files look for OpenCV include and lib folders and attempt to
 - `numpy`
 - `mathutils`
 
-`bpy` and `mathutils` come from Blender. `cv2` and `numpy` must be available in Blender's Python environment for the render script to work reliably.
+`bpy` and `mathutils` come from Blender. `numpy` is bundled with Blender. Only `cv2` must be installed into Blender's Python environment: pin `opencv-python==4.11.0.86` (the unpinned/newest wheel currently fails inside Blender's Python, and 4.11 requires numpy ≥ 2, provided by Blender 5.0+). On Windows, run the install terminal as Administrator; see the CLI README troubleshooting section for the permission (ACL) pitfall.
 
 ## Platform note
 

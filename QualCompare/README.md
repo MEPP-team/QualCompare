@@ -149,16 +149,17 @@ C:\Program Files\Blender Foundation\Blender 5.0\blender.exe
 
 The rendering pipeline uses OpenCV inside Blender's Python environment for mask post-processing.
 
-If rendering fails because `cv2` is missing, install it into Blender's Python environment. A typical Windows procedure is:
+If rendering fails because `cv2` is missing, install it into Blender's Python environment. A typical Windows procedure is (run PowerShell **as Administrator**):
 
 ```powershell
 cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"
 .\python.exe -m ensurepip
 .\python.exe -m pip install --upgrade pip
-.\python.exe -m pip install --force-reinstall opencv-python
+.\python.exe -m pip install --force-reinstall "opencv-python==4.11.0.86"
+.\python.exe -c "import cv2; print(cv2.__version__)"   # should print 4.11.0
 ```
 
-Adjust the Blender version in the path if needed.
+Adjust the Blender version in the path if needed. Pin `opencv-python==4.11.0.86` (the newest wheel currently fails inside Blender's Python) and use **Blender 5.0+** (opencv 4.11 needs numpy ≥ 2, which Blender bundles from 5.0). If `cv2` is still not found after a successful install, the terminal was probably not elevated (pip fell back to the per-user site) — re-run as Administrator.
 
 If this still does not work, ask the maintainer or developer team for the Blender dependency setup used in your lab environment.
 

@@ -208,7 +208,7 @@ BLENDER_PY=$(blender --background --python-expr "import sys; print('PY_EXE=' + s
 ```bash
 "$BLENDER_PY" -m ensurepip --upgrade
 "$BLENDER_PY" -m pip install --upgrade pip
-"$BLENDER_PY" -m pip install opencv-python numpy
+"$BLENDER_PY" -m pip install "opencv-python==4.11.0.86"   # numpy is bundled by Blender (5.0+ provides numpy 2)
 ```
 
 1. verify imports from Blender runtime:
