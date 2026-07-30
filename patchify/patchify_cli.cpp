@@ -18,6 +18,15 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    // Help can be requested as the first argument too (not only after the path).
+    {
+        const std::string first = argv[1];
+        if (first == "--help" || first == "-h") {
+            PrintUsage(argv[0]);
+            return 0;
+        }
+    }
+
     fs::path inputPath = argv[1];
     bool forceFolder = false;
     bool forceImage = false;
