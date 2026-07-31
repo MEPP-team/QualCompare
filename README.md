@@ -49,6 +49,3 @@ Paper under review
 This project is distributed under the GNU General Public License v3.0.
 See the [`LICENSE.md`](LICENSE.md) file for details.
 
-## Status
-
-This repository contains research software. The priority is reproducibility and practical usability for experiments rather than production-level packaging or API stability.
