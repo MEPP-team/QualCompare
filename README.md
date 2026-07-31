@@ -40,6 +40,10 @@ QualCompare is an application for reproducible multi-view rendering of 3D object
 - `.obj` with associated `.mtl` and textures when applicable
 - `.ply`
 
+## Citation
+
+Paper under review
+
 ## License
 
 This project is distributed under the GNU General Public License v3.0.
