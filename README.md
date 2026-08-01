@@ -2,6 +2,12 @@
 
 QualCompare is an application for reproducible multi-view rendering of 3D objects (meshes and point clouds) and patch extraction, providing a controlled workflow for image-based perceptual quality assessment of 3D graphics. It ships as a Windows desktop GUI and a cross-platform command-line tool. This repository is paired with [Graphics-LPIPS-QualCompare](https://github.com/MEPP-team/Graphics-LPIPS-QualCompare), a fork of [Graphics-LPIPS](https://github.com/MEPP-team/Graphics-LPIPS) that eases reproducible training and evaluation on any dataset using QualCompare's outputs.
 
+This repository accompanies the paper:
+
+> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> *Currently under review.*
+
 ## Start here
 
 **For Desktop Application (Windows WPF GUI):**
@@ -42,7 +48,10 @@ QualCompare is an application for reproducible multi-view rendering of 3D object
 
 ## Citation
 
-Paper under review
+> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> *Currently under review.*
+
 
 ## License
 
