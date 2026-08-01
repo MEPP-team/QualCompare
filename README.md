@@ -4,7 +4,7 @@ QualCompare is an application for reproducible multi-view rendering of 3D object
 
 This repository accompanies the paper:
 
-> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**
 > Guillaume Lavoué, Gautier Campagne, Florent Dupont
 > *Currently under review.*
 
@@ -48,7 +48,7 @@ This repository accompanies the paper:
 
 ## Citation
 
-> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**
 > Guillaume Lavoué, Gautier Campagne, Florent Dupont
 > *Currently under review.*
 
