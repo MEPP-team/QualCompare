@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -51,16 +52,24 @@ internal static class PatchifyNative
         var currentDirectory = Directory.GetCurrentDirectory();
         var parentDirectory = Directory.GetParent(baseDirectory)?.FullName;
 
-        return new[]
-        {
-            Path.Combine(baseDirectory, nativeFileName),
-            Path.Combine(baseDirectory, "..", nativeFileName),
-            parentDirectory is null ? string.Empty : Path.Combine(parentDirectory, nativeFileName),
-            Path.Combine(currentDirectory, nativeFileName),
-            Path.Combine(currentDirectory, "patchify", "build", "Debug", nativeFileName),
-            Path.Combine(currentDirectory, "patchify", "build", "Release", nativeFileName),
-            Path.Combine(currentDirectory, "patchify", "build", "MinSizeRel", nativeFileName),
-            Path.Combine(currentDirectory, "patchify", "build", "RelWithDebInfo", nativeFileName),
-        };
+        var candidates = new List<string>();
+
+        // Documented override (see README "Native library deployment"):
+        // QUALCOMPARE_PATCHIFY_PATH holds the full path to the native library.
+        var envPath = Environment.GetEnvironmentVariable("QUALCOMPARE_PATCHIFY_PATH");
+        if (!string.IsNullOrWhiteSpace(envPath))
+            candidates.Add(envPath);
+
+        candidates.Add(Path.Combine(baseDirectory, nativeFileName));
+        candidates.Add(Path.Combine(baseDirectory, "..", nativeFileName));
+        if (parentDirectory is not null)
+            candidates.Add(Path.Combine(parentDirectory, nativeFileName));
+        candidates.Add(Path.Combine(currentDirectory, nativeFileName));
+        candidates.Add(Path.Combine(currentDirectory, "patchify", "build", "Debug", nativeFileName));
+        candidates.Add(Path.Combine(currentDirectory, "patchify", "build", "Release", nativeFileName));
+        candidates.Add(Path.Combine(currentDirectory, "patchify", "build", "MinSizeRel", nativeFileName));
+        candidates.Add(Path.Combine(currentDirectory, "patchify", "build", "RelWithDebInfo", nativeFileName));
+
+        return candidates.ToArray();
     }
 }

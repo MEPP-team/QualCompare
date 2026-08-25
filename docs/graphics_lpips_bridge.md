@@ -86,7 +86,7 @@ When the goal is reproducibility, pin these values rather than leaving them impl
 For the current codebase, the defaults that matter most are already visible in `QualCompare/MainWindow.xaml.cs`:
 
 - resolution: 650 x 550
-- render engine: `BLENDER_EEVEE_NEXT`
+- render engine: `BLENDER_EEVEE`
 - TAA samples: 64
 - sun theta: 30
 - sun phi: 50

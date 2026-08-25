@@ -9,8 +9,8 @@ It is designed for research usage on meshes and point clouds, with a practical G
 ## System requirements
 
 - Windows 10 or Windows 11
-- Blender 4.4 or higher installed on the machine
-- .NET Framework 4.8.1 available
+- Blender 5.0 or higher installed on the machine
+- .NET Framework 4.8.1 runtime (to run the app; building from source additionally needs the Developer Pack — see Option 2)
 - enough free disk space for rendered outputs and temporary files
 
 Recommended for large datasets:
@@ -29,7 +29,7 @@ Important:
 
 ## Installation
 
-## Option 1 - Recommended: install with the Windows setup
+### Option 1 - Recommended: install with the Windows setup
 
 If you are using a release package or a local clone:
 
@@ -43,22 +43,29 @@ On first launch, the application creates its configuration automatically.
 
 If Blender is already installed, QualCompare may detect it automatically. If not, you will be asked to select `blender.exe` manually in the application settings.
 
-## Option 2 - Run from a development build
+### Option 2 - Run from a development build
 
 If you are using a locally built version:
 
+> **Build prerequisites:** Visual Studio 2022 with the *Desktop development with C++* and *.NET desktop development* workloads, plus the **.NET Framework 4.8.1 Developer Pack** (targeting pack). Without the Developer Pack, the build fails with `MSB3644` ("reference assemblies for .NETFramework 4.8.1 not found"). Install it with:
+> ```powershell
+> winget install Microsoft.DotNet.Framework.DeveloperPack_4
+> ```
+> or via Visual Studio Installer → Individual components → ".NET Framework 4.8.1 targeting pack".
+
 1. Open `QualCompare/QualCompare.sln` in Visual Studio 2022.
-2. Select `Release | x64` (or `Debug | x64` for development).
-3. Build the full solution (Build > Build Solution).
-4. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
-5. On first launch, let the application create its initial configuration.
-6. Verify that Blender and the bundled render script are correctly detected.
+2. Restore NuGet packages. Visual Studio does this automatically when the solution is opened; for command-line builds, run `nuget restore QualCompare.sln` first (the `packages/` folder is not committed and is recreated by the restore).
+3. Select `Release | x64` (or `Debug | x64` for development).
+4. Build the full solution (Build > Build Solution).
+5. Open the generated `QualCompare.exe` from `QualCompare/bin/Release/` or `QualCompare/bin/Debug/`.
+6. On first launch, let the application create its initial configuration.
+7. Verify that Blender and the bundled render script are correctly detected.
 
 ## 5-minute quick start
 
 Use this section if you want to check quickly that QualCompare works on your machine.
 
-1. Install Blender 4.x on Windows. (4.4+ recommended)
+1. Install Blender 5.0+ on Windows.
 2. Launch QualCompare.
 3. If asked, select your `blender.exe`.
 4. Choose a small folder containing one `.obj` file.
@@ -77,8 +84,8 @@ object_name/
     masks/
 ```
 
-1. Open the Patchify area and run patch extraction on one rendered image or folder.
-1. Confirm that patch CSV output is created.
+9. Open the Patchify area and run patch extraction on one rendered image or folder.
+10. Confirm that patch CSV output is created.
 
 If this quick test works, the application is ready for larger datasets and longer experiments.
 
@@ -139,7 +146,7 @@ If Blender is not detected automatically:
 Typical Blender path:
 
 ```text
-C:\Program Files\Blender Foundation\Blender 4.x\blender.exe
+C:\Program Files\Blender Foundation\Blender 5.0\blender.exe
 ```
 
 ---
@@ -148,16 +155,17 @@ C:\Program Files\Blender Foundation\Blender 4.x\blender.exe
 
 The rendering pipeline uses OpenCV inside Blender's Python environment for mask post-processing.
 
-If rendering fails because `cv2` is missing, install it into Blender's Python environment. A typical Windows procedure is:
+If rendering fails because `cv2` is missing, install it into Blender's Python environment. A typical Windows procedure is (run PowerShell **as Administrator**):
 
 ```powershell
-cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
+cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"
 .\python.exe -m ensurepip
 .\python.exe -m pip install --upgrade pip
-.\python.exe -m pip install --force-reinstall opencv-python
+.\python.exe -m pip install --force-reinstall "opencv-python==4.11.0.86"
+.\python.exe -c "import cv2; print(cv2.__version__)"   # should print 4.11.0
 ```
 
-Adjust the Blender version in the path if needed.
+Adjust the Blender version in the path if needed. Pin `opencv-python==4.11.0.86` (the newest wheel currently fails inside Blender's Python) and use **Blender 5.0+** (opencv 4.11 needs numpy ≥ 2, which Blender bundles from 5.0). If `cv2` is still not found after a successful install, the terminal was probably not elevated (pip fell back to the per-user site) — re-run as Administrator.
 
 If this still does not work, ask the maintainer or developer team for the Blender dependency setup used in your lab environment.
 
@@ -215,7 +223,7 @@ The current source/distorted detection is heuristic and based on folder names su
 If you need the exact bridge between QualCompare and Graphics-LPIPS-QualCompare, or a step-by-step reproduction protocol for the paper workflow, see:
 
 - [docs/graphics_lpips_bridge.md](../docs/graphics_lpips_bridge.md)
-- [docs/qomex_reproduction.md](../docs/qomex_reproduction.md)
+- [docs/replication.md](../docs/replication.md)
 
 ---
 
@@ -276,7 +284,7 @@ Patchify relies on the existing render structure, especially the sibling `views/
 
 ## Troubleshooting
 
-## Blender not found
+### Blender not found
 
 Symptoms:
 
@@ -290,7 +298,7 @@ What to do:
 3. Save the path.
 4. Retry the render.
 
-## Render script not found
+### Render script not found
 
 Symptoms:
 
@@ -301,7 +309,7 @@ What to do:
 - verify that the installed application contains `scripts\render_single.py`
 - if you are using a local build, make sure the script was copied to the output folder
 
-## `cv2` import error inside Blender
+### `cv2` import error inside Blender
 
 Symptoms:
 
@@ -309,10 +317,10 @@ Symptoms:
 
 What to do:
 
-- install `opencv-python` in Blender's Python environment
+- install `opencv-python==4.11.0.86` into Blender's Python environment (see "If Blender Python is missing `cv2`" above)
 - restart QualCompare and try again
 
-## Missing textures
+### Missing textures
 
 Symptoms:
 
@@ -323,7 +331,7 @@ What to do:
 - keep `.obj`, `.mtl`, and textures in a consistent relative layout
 - verify that the material file references the texture files correctly
 
-## Rendering is very slow
+### Rendering is very slow
 
 Symptoms:
 
@@ -336,7 +344,7 @@ What to do:
 - test on a smaller subset first
 - close other heavy applications
 
-## Masks are empty or wrong
+### Masks are empty or wrong
 
 Symptoms:
 
@@ -348,7 +356,7 @@ What to do:
 - test another object from the same dataset
 - confirm that Blender imported the object correctly
 
-## Patchify does not produce usable output
+### Patchify does not produce usable output
 
 Symptoms:
 
@@ -362,7 +370,7 @@ What to do:
 - confirm that `views/` and `masks/` exist for the object
 - confirm filenames follow the expected `view_N` and `mask_N` pattern
 
-## Patchify wrapper DLL cannot be loaded
+### Patchify wrapper DLL cannot be loaded
 
 Symptoms:
 
@@ -387,17 +395,6 @@ What to do:
 
 ---
 
-## Citation
-
-If you use this software in research, please cite the corresponding work:
-
-```text
-Towards Reproducible Image-based 3D Quality Assessment:
-Integrated Software and New Results
-```
-
----
-
 ## License
 
-Research software for internal or academic use.
+This project is distributed under the GNU General Public License v3.0 (GPL-3.0). See the [`LICENSE.md`](../LICENSE.md) file for details.

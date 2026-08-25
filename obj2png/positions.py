@@ -37,7 +37,7 @@ def generate_positions(N, postype = "fibonacci", ypos = 0):
             y = math.sin(phi) * abs(costheta)
             # z = sqrt(1 - x^2 - y^2)
             cameraPositions.append((x, y, z))
-    elif postype == "polyedric":
+    elif postype in ("polyedric", "polyhedric"):
         # Il n'existe que 5 polyèdres réguliers convexes : 
         # - Tétraèdre = 4 Sommets
         # - Octaèdre = 6 Sommets

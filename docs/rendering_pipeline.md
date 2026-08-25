@@ -159,7 +159,7 @@ For each sampled view:
 Typical defaults currently defined in code are:
 
 - resolution: `650 x 550`
-- engine: `BLENDER_EEVEE_NEXT`
+- engine: `BLENDER_EEVEE`
 - TAA samples: `64`
 - filter size: `1.0` in Python defaults, `1.5` in the current C# config defaults
 - sun theta: `30`

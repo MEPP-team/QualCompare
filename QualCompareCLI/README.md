@@ -17,7 +17,7 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 ### System Requirements
 
 - .NET 8 SDK or later
-- Blender 4.x installed separately (not bundled)
+- Blender 5.0+ installed separately (not bundled)
 - Python with `cv2` and `numpy` in Blender's Python environment
 - For the default render pipeline, and for `--patchify`, the native `patchify_c` library must be available on the system library search path next to the CLI or installed in a standard location
 
@@ -26,8 +26,8 @@ Cross-platform command-line interface for batch rendering of 3D objects with Ble
 Before the first test run, make sure you have:
 
 1. `.NET 8`
-2. `Blender 4.x`
-3. `opencv-python` and `numpy` inside Blender's Python environment
+2. `Blender 5.0+`
+3. `opencv-python==4.11.0.86` inside Blender's Python environment (numpy is bundled with Blender)
 4. `patchify_c` available if you want the default render pipeline to patchify outputs or if you want to use `--patchify`
 
 For a quick first render-only test, you only need items 1 to 3 and you should pass `--no-patchify`. If you want the default full pipeline, install item 4 too.
@@ -36,18 +36,22 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
 
 #### Windows
 
-1. **Install Blender 4.4+**
+1. **Install Blender 5.0+**
    - Download from [blender.org](https://www.blender.org)
    - Use default installation path or note your custom path
 
-2. **Install OpenCV in Blender's Python**
+2. **Install OpenCV in Blender's Python** — run PowerShell **as Administrator** (it writes into `Program Files`)
    ```powershell
-   cd "C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin"
+   cd "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin"   # adjust the version in the path
    .\python.exe -m ensurepip
    .\python.exe -m pip install --upgrade pip
-   .\python.exe -m pip install opencv-python numpy
+   .\python.exe -m pip install "opencv-python==4.11.0.86"
+   .\python.exe -c "import cv2; print(cv2.__version__)"   # should print 4.11.0
    ```
-   (Adjust version number as needed)
+   Notes:
+   - **Pin** `opencv-python==4.11.0.86`. The newest/unpinned wheel currently imports but fails to load its functions inside Blender's Python.
+   - Do **not** install `numpy` here — Blender bundles it. `opencv-python 4.11` requires numpy ≥ 2, which Blender 5.0+ provides (another reason to use Blender ≥ 5.0).
+   - If the terminal is **not** elevated, pip installs into the per-user site, which Blender ignores (see Troubleshooting).
 
 3. **Build QualCompareCLI**
    ```powershell
@@ -75,7 +79,7 @@ For a quick first render-only test, you only need items 1 to 3 and you should pa
    # Or use snap
    sudo snap install blender --classic
    ```
-Be careful to get a version of Blender recommended above 4.4.
+Note: the Blender packaged in Ubuntu's `apt` repositories is often **older than 5.0**. Prefer `snap install blender --classic` (tracks the latest) or download Blender 5.0+ from [blender.org](https://www.blender.org), and set `blenderPath` accordingly.
 
 3. **Install Python packages in Blender's environment**
    
@@ -86,7 +90,7 @@ Be careful to get a version of Blender recommended above 4.4.
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
    "$BLENDER_PY" -m pip install --upgrade pip
-   "$BLENDER_PY" -m pip install opencv-python numpy
+   "$BLENDER_PY" -m pip install "opencv-python==4.11.0.86"   # numpy is bundled by Blender (5.0+ provides numpy 2)
    ```
 
 4. **Build QualCompareCLI**
@@ -114,7 +118,7 @@ Be careful to get a version of Blender recommended above 4.4.
    # Bootstrap pip and install packages
    "$BLENDER_PY" -m ensurepip --upgrade
    "$BLENDER_PY" -m pip install --upgrade pip
-   "$BLENDER_PY" -m pip install opencv-python numpy
+   "$BLENDER_PY" -m pip install "opencv-python==4.11.0.86"   # numpy is bundled by Blender (5.0+ provides numpy 2)
    ```
 
 3. **Build QualCompareCLI**
@@ -352,6 +356,20 @@ See `examples/render_ply_voxel_windows.json`
 qualcompare-cli --config examples/render_ply_voxel_windows.json
 ```
 
+### Paper reproduction configs (Table 7)
+
+The `examples/paper_*_8v_yfixed.json` files capture the exact render settings used for the paper's Table 7 (8 views, `yfixed` sampling, TAA 16, filter size 1.5, plus the per-dataset resolution / lighting / point radius from Table 6):
+
+| Config | Dataset | Type | Resolution | (θ, φ) | Point radius |
+|--------|---------|------|-----------|--------|--------------|
+| `paper_TMQ_8v_yfixed.json` | TMQ | mesh | 650×550 | (30, 50) | — |
+| `paper_TSMD_8v_yfixed.json` | TSMD | mesh | 650×550 | (30, 50) | — |
+| `paper_SJTU-TMQA_8v_yfixed.json` | SJTU-TMQA | mesh | 1920×1080 | (0, 0) | — |
+| `paper_BASICS_8v_yfixed.json` | BASICS | point cloud | 960×960 | — | 0.003 |
+| `paper_WPC_8v_yfixed.json` | WPC | point cloud | 960×960 | — | 0.001 |
+
+Paths (`blenderPath`, `inputDir`, ...) are placeholders — fill them with `scripts/fill_render_config_paths.py` or edit them by hand. Lighting angles do not affect point-cloud renders (points use an emissive material), so they are left at defaults for BASICS/WPC.
+
 ### Test assets
 
 The `sample_data/quick_test/source/` tree includes small fixtures that are useful for smoke tests:
@@ -386,7 +404,7 @@ Check the `blenderPath` in your JSON configuration. Examples:
 
 - **Linux**: `/usr/bin/blender` or `/snap/bin/blender`
 - **macOS**: `/Applications/Blender.app/Contents/MacOS/blender`
-- **Windows**: `C:\Program Files\Blender Foundation\Blender 4.4\blender.exe`
+- **Windows**: `C:\Program Files\Blender Foundation\Blender 5.0\blender.exe`
 
 ### "Render script not found"
 
@@ -403,15 +421,24 @@ Check that:
 
 ### Blender Python `cv2` import error
 
-Install OpenCV in Blender's Python:
+Install OpenCV in Blender's Python (pin the version):
 
 ```bash
 # Linux/macOS
-/path/to/blender/python/bin/python -m pip install opencv-python
+/path/to/blender/python/bin/python -m pip install "opencv-python==4.11.0.86"
 
-# Windows
-"C:\Program Files\Blender Foundation\Blender 4.4\4.4\python\bin\python.exe" -m pip install opencv-python
+# Windows (run the terminal as Administrator)
+"C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\bin\python.exe" -m pip install "opencv-python==4.11.0.86"
 ```
+
+If Blender still reports `No module named 'cv2'` (or `cv2` imports but has no functions) after a successful install:
+
+- The install likely went to the **per-user site** (non-admin terminal), which Blender ignores. Re-run the terminal **as Administrator**.
+- If you installed with `pip --target` under `Program Files`, the files may have permissions the normal user cannot read. Reset them (Administrator):
+  ```powershell
+  icacls "C:\Program Files\Blender Foundation\Blender 5.0\5.0\python\Lib\site-packages\cv2" /reset /T
+  ```
+- `opencv-python 4.11` requires **numpy ≥ 2** (provided by Blender 5.0+). On Blender 4.x (numpy 1.x) the import fails — use **Blender ≥ 5.0**.
 
 ## Integration with GUI
 

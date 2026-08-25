@@ -135,9 +135,9 @@ This split is real and contributors should preserve it unless they are intention
 - Visual Studio workloads for:
   - .NET desktop development
   - Desktop development with C++
-- .NET Framework 4.8.1 targeting pack
+- .NET Framework 4.8.1 targeting pack (Developer Pack) — install with `winget install Microsoft.DotNet.Framework.DeveloperPack_4`, or via Visual Studio Installer → Individual components → ".NET Framework 4.8.1 targeting pack". If it is missing, the build fails with `MSB3644`.
 - MSVC v143 toolset
-- Blender 4.x installed separately
+- Blender 5.0+ installed separately
 - OpenCV native installation for `patchify/` and `PatchifyWrapper/`
 
 ## Managed dependencies
@@ -168,7 +168,7 @@ The current project files look for OpenCV include and lib folders and attempt to
 - `numpy`
 - `mathutils`
 
-`bpy` and `mathutils` come from Blender. `cv2` and `numpy` must be available in Blender's Python environment for the render script to work reliably.
+`bpy` and `mathutils` come from Blender. `numpy` is bundled with Blender. Only `cv2` must be installed into Blender's Python environment: pin `opencv-python==4.11.0.86` (the unpinned/newest wheel currently fails inside Blender's Python, and 4.11 requires numpy ≥ 2, provided by Blender 5.0+). On Windows, run the install terminal as Administrator; see the CLI README troubleshooting section for the permission (ACL) pitfall.
 
 ## Platform note
 
@@ -235,6 +235,27 @@ Benefits:
 - Enables cross-platform shared library loading (`.dll` on Windows, `.so` on Linux, `.dylib` on macOS)
 - Simplifies .NET P/Invoke interop for QualCompareCLI
 - Allows alternative language bindings (Python, Rust, etc.) in the future
+
+### Patch extraction parameters (fixed at build time)
+
+Patch extraction uses **fixed parameters baked into the native module**. They are
+**not** exposed at runtime through the C API, the CLI, or the GUI. The single source
+of truth is the default arguments of `patchifyImage` in `patchify/patchify.cpp`:
+
+```cpp
+cv::Mat patchifyImage(const string& imagePath,
+                      int patchSize = 64,             // patch size (px)
+                      int px = 32, int py = 32,       // horizontal / vertical step (=> 50% overlap)
+                      float overlapThreshold = 0.65)  // min object coverage to keep a patch
+```
+
+To change these values, edit the defaults above and rebuild `patchify_c` (CMake) and,
+for the desktop application, `PatchifyWrapper`. Every entry point (`patchify_cli`,
+`QualCompareCLI --patchify`, and the WPF app) ultimately calls this function with its
+defaults, so this one edit changes patch extraction everywhere.
+
+The GUI "Patchify Parameters" dialog is **display-only**: it shows these values but does
+not override the native defaults.
 
 ### Building patchify with CMake
 

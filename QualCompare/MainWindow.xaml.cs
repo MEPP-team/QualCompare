@@ -54,9 +54,9 @@ namespace QualCompare
             public double SunPhi { get; set; } = 50.0;
             public string PlyRenderMode { get; set; } = "sphere"; // "sphere", "surface" or "voxel"
             public double PointRadiusFraction { get; set; } = 0.003; // for point cloud rendering with "sphere" mode
-            public int PlyVoxelBits { get; set; } = 12; // number of quantization bits for "voxel" mode
+            public int PlyVoxelBits { get; set; } = 10; // number of quantization bits for "voxel" mode (aligned with CLI RenderConfig)
             public string BackgroundColorHex { get; set; } = "#34322C"; // Light Gray
-            public double VoxelRadiusMultiplier { get; set; } = 1.2; // multiplier for voxel size when rendering with "voxel" mode
+            public double VoxelRadiusMultiplier { get; set; } = 1.0; // multiplier for voxel size when rendering with "voxel" mode (aligned with CLI RenderConfig)
             // ---- Patchification parameters ----
             public int PatchSize { get; set; } = 64;
             public int PatchStepX { get; set; } = 32;
