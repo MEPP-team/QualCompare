@@ -558,10 +558,6 @@ namespace QualCompare
 
                             p.ErrorDataReceived += (s, ea) =>
                             {
-<<<<<<< HEAD
-                                if (!string.IsNullOrWhiteSpace(ea.Data))
-                                    JobAppendLog(job, "[BLENDER] " + ea.Data);
-=======
                                 if (string.IsNullOrWhiteSpace(ea.Data)) return;
 
                                 // Blender writes normal logs AND warnings to stderr, not only errors.
@@ -569,13 +565,13 @@ namespace QualCompare
                                 string line = ea.Data;
                                 string lower = line.ToLowerInvariant();
                                 string tag =
-                                    (lower.Contains("error") || lower.Contains("traceback") ||
+                                    lower.Contains("win32 error# (0)") ? "[Blender] "
+                                    : (lower.Contains("error") || lower.Contains("traceback") ||
                                      lower.Contains("exception") || lower.Contains("failed")) ? "[ERROR] "
                                     : (lower.Contains("warning") || lower.Contains("deprecat")) ? "[WARN] "
                                     : "[Blender] ";
 
                                 JobAppendLog(job, tag + line);
->>>>>>> 5ef47d5607d83a7c7276bea9a33f8c3009ee1c18
                             };
                             p.BeginErrorReadLine();
 
