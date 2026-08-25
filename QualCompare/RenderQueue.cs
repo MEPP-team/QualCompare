@@ -208,7 +208,7 @@ namespace QualCompare
                 YPos = ypos,
                 NbViews = nbViews,
 
-                UpAxis = Config.UpAxis, 
+                UpAxis = Config.UpAxis,
                 BgHex = Config.BackgroundColorHex,
                 ResolutionX = Config.ResolutionX,
                 ResolutionY = Config.ResolutionY,
@@ -398,7 +398,7 @@ namespace QualCompare
                 }).ToArray();
 
             int nbFiles = allFiles.Length;
-            
+
             if (nbFiles == 0)
             {
                 Dispatcher.Invoke(() => job.State = RenderJobState.Failed);
@@ -476,162 +476,161 @@ namespace QualCompare
                         {
                             po.CancellationToken.ThrowIfCancellationRequested();
 
-                        string cachedObjPath = file;
-                        bool inputWasPrefetched = false;
-                        if (job.PrefetchToSSD)
-                        {
-                            hddReadGate.Wait(po.CancellationToken);
-                            try
+                            string cachedObjPath = file;
+                            bool inputWasPrefetched = false;
+                            if (job.PrefetchToSSD)
                             {
-                                cachedObjPath = PrefetchObjToSSD(file, job.TempInputRoot);
-                                inputWasPrefetched = true;
+                                hddReadGate.Wait(po.CancellationToken);
+                                try
+                                {
+                                    cachedObjPath = PrefetchObjToSSD(file, job.TempInputRoot);
+                                    inputWasPrefetched = true;
+                                }
+                                finally
+                                {
+                                    hddReadGate.Release();
+                                }
                             }
-                            finally
+
+                            string name = Path.GetFileNameWithoutExtension(file);
+                            string workerKey = inputWasPrefetched
+                                ? Path.GetFileName(Path.GetDirectoryName(cachedObjPath))
+                                : Guid.NewGuid().ToString("N");
+                            string workerOutputRoot = Path.Combine(job.TempOutputRoot, workerKey);
+                            Directory.CreateDirectory(workerOutputRoot);
+
+                            //string args =
+                            //    $"--background --python \"{job.RenderScript}\" -- " +
+                            //    $"--obj \"{cachedObjPath}\" " +
+                            //    $"--out \"{job.TempOutputRoot}\" " +
+                            //    $"--nb_views {job.NbViews} " +
+                            //    $"--ext {job.Extension} " +
+                            //    $"--positions_type {job.PositionsType} " +
+                            //    $"--file_type {job.FileType} " +
+                            //    $"--obj_type {job.ObjType} " +
+                            //    $"--ypos {job.YPos}";
+                            string args = $"--background " +
+                                          $"--python \"{job.RenderScript}\" " +
+                                          $"-- " +
+                                          // --- Input parameters ---
+                                          $"--obj \"{cachedObjPath}\" " +
+                                          $"--out \"{workerOutputRoot}\" " +
+                                          $"--nb_views {job.NbViews} " +
+                                          $"--positions_type {job.PositionsType} " +
+                                          $"--ext {job.Extension} " +
+                                          $"--file_type {job.FileType} " +
+                                          $"--obj_type {job.ObjType} " +
+                                          $"--ypos {job.YPos} " +
+                                          $"--up_axis {job.UpAxis} " +
+                                          $"--resx {job.ResolutionX} " +
+                                          $"--resy {job.ResolutionY} " +
+                                          $"--threads 4 " +
+                                          $"--engine {job.RenderEngine} " +
+                                          $"--taa {job.TaaSamples} " +
+                                          $"--filter_size {job.FilterSize.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--mask_threshold {job.MaskThreshold} " +
+                                          $"--sun_energy {job.SunEnergy.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--sun_theta {job.SunTheta.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--sun_phi {job.SunPhi.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--point_radius_fraction {job.PointRadiusFraction.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--ply_render {job.PlyRenderMode} " +
+                                          $"--ply_voxel_bits {job.PlyVoxelBits} " +
+                                          $"--voxel_radius_multiplier {job.VoxelRadiusMultiplier.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--bg_color {job.BgHex}";
+
+                            var psi = new ProcessStartInfo
                             {
-                                hddReadGate.Release();
-                            }
-                        }
-
-                        string name = Path.GetFileNameWithoutExtension(file);
-                        string workerKey = inputWasPrefetched
-                            ? Path.GetFileName(Path.GetDirectoryName(cachedObjPath))
-                            : Guid.NewGuid().ToString("N");
-                        string workerOutputRoot = Path.Combine(job.TempOutputRoot, workerKey);
-                        Directory.CreateDirectory(workerOutputRoot);
-
-                        //string args =
-                        //    $"--background --python \"{job.RenderScript}\" -- " +
-                        //    $"--obj \"{cachedObjPath}\" " +
-                        //    $"--out \"{job.TempOutputRoot}\" " +
-                        //    $"--nb_views {job.NbViews} " +
-                        //    $"--ext {job.Extension} " +
-                        //    $"--positions_type {job.PositionsType} " +
-                        //    $"--file_type {job.FileType} " +
-                        //    $"--obj_type {job.ObjType} " +
-                        //    $"--ypos {job.YPos}";
-                        string args = $"--background " +
-                                      $"--python \"{job.RenderScript}\" " +
-                                      $"-- " +
-                                      // --- Input parameters ---
-                                      $"--obj \"{cachedObjPath}\" " +
-                                      $"--out \"{workerOutputRoot}\" " +
-                                      $"--nb_views {job.NbViews} " +
-                                      $"--positions_type {job.PositionsType} " +
-                                      $"--ext {job.Extension} " +
-                                      $"--file_type {job.FileType} " +
-                                      $"--obj_type {job.ObjType} " +
-                                      $"--ypos {job.YPos} " +
-                                      $"--up_axis {job.UpAxis} " +
-                                      $"--resx {job.ResolutionX} " +
-                                      $"--resy {job.ResolutionY} " +
-                                      $"--threads 4 " +
-                                      $"--engine {job.RenderEngine} " +
-                                      $"--taa {job.TaaSamples} " +
-                                      $"--filter_size {job.FilterSize.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--mask_threshold {job.MaskThreshold} " +
-                                      $"--sun_energy {job.SunEnergy.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--sun_theta {job.SunTheta.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--sun_phi {job.SunPhi.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--point_radius_fraction {job.PointRadiusFraction.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--ply_render {job.PlyRenderMode} " +
-                                      $"--ply_voxel_bits {job.PlyVoxelBits} " +
-                                      $"--voxel_radius_multiplier {job.VoxelRadiusMultiplier.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--bg_color {job.BgHex}";
-
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = job.BlenderPath,
-                            Arguments = args,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = false,
-                            RedirectStandardError = true,
-                            CreateNoWindow = true,
-                            StandardErrorEncoding = Encoding.UTF8
-                        };
-
-                        int blenderExitCode;
-                        using (Process p = Process.Start(psi))
-                        {
-                            if (p == null) throw new InvalidOperationException("Blender process couldn't start.");
-
-                            job.RunningProcesses.TryAdd(p.Id, p);
-
-                            p.ErrorDataReceived += (s, ea) =>
-                            {
-                                if (string.IsNullOrWhiteSpace(ea.Data)) return;
-
-                                // Blender writes normal logs AND warnings to stderr, not only errors.
-                                // Classify so benign warnings are not surfaced as [ERROR].
-                                string line = ea.Data;
-                                string lower = line.ToLowerInvariant();
-                                string tag =
-                                    lower.Contains("win32 error# (0)") ? "[Blender] "
-                                    : (lower.Contains("error") || lower.Contains("traceback") ||
-                                     lower.Contains("exception") || lower.Contains("failed")) ? "[ERROR] "
-                                    : (lower.Contains("warning") || lower.Contains("deprecat")) ? "[WARN] "
-                                    : "[Blender] ";
-
-                                JobAppendLog(job, tag + line);
+                                FileName = job.BlenderPath,
+                                Arguments = args,
+                                UseShellExecute = false,
+                                RedirectStandardOutput = false,
+                                RedirectStandardError = true,
+                                CreateNoWindow = true,
+                                StandardErrorEncoding = Encoding.UTF8
                             };
-                            p.BeginErrorReadLine();
 
-                            p.WaitForExit();
-                            blenderExitCode = p.ExitCode;
-                            // Ensure the asynchronous stderr reader has consumed all pending lines.
-                            p.WaitForExit();
+                            int blenderExitCode;
+                            using (Process p = Process.Start(psi))
+                            {
+                                if (p == null) throw new InvalidOperationException("Blender process couldn't start.");
 
-                            job.RunningProcesses.TryRemove(p.Id, out _);
-                        }
+                                job.RunningProcesses.TryAdd(p.Id, p);
 
-                        if (blenderExitCode != 0)
-                            throw new InvalidOperationException($"Blender failed for '{file}' (exit code {blenderExitCode}).");
+                                p.ErrorDataReceived += (s, ea) =>
+                                {
+                                    if (string.IsNullOrWhiteSpace(ea.Data)) return;
 
-                        // Cleanup + copy cached output
-                        try
-                        {
-                            if (inputWasPrefetched)
-                                Directory.Delete(Path.GetDirectoryName(cachedObjPath), true);
+                                    // Blender writes normal logs AND warnings to stderr, not only errors.
+                                    // Classify so benign warnings are not surfaced as [ERROR].
+                                    string line = ea.Data;
+                                    string lower = line.ToLowerInvariant();
+                                    string tag =
+                                        (lower.Contains("error") || lower.Contains("traceback") ||
+                                         lower.Contains("exception") || lower.Contains("failed")) ? "[ERROR] "
+                                        : (lower.Contains("warning") || lower.Contains("deprecat")) ? "[WARN] "
+                                        : "[Blender] ";
 
-                            string cachedOutputDir = Path.Combine(workerOutputRoot, Path.GetFileNameWithoutExtension(file));
-                            string finalOutputDir = Path.Combine(job.OutputDir, Path.GetFileNameWithoutExtension(file));
+                                    JobAppendLog(job, tag + line);
+                                };
+                                p.BeginErrorReadLine();
 
-                            if (!Directory.Exists(cachedOutputDir))
-                                throw new DirectoryNotFoundException("Blender did not create the expected output directory: " + cachedOutputDir);
+                                p.WaitForExit();
+                                blenderExitCode = p.ExitCode;
+                                // Ensure the asynchronous stderr reader has consumed all pending lines.
+                                p.WaitForExit();
 
-                            hddWriteGate.Wait(po.CancellationToken);
+                                job.RunningProcesses.TryRemove(p.Id, out _);
+                            }
+
+                            if (blenderExitCode != 0)
+                                throw new InvalidOperationException($"Blender failed for '{file}' (exit code {blenderExitCode}).");
+
+                            // Cleanup + copy cached output
                             try
                             {
-                                Directory.CreateDirectory(finalOutputDir);
+                                if (inputWasPrefetched)
+                                    Directory.Delete(Path.GetDirectoryName(cachedObjPath), true);
 
-                                foreach (string dirPath in Directory.GetDirectories(cachedOutputDir, "*", SearchOption.AllDirectories))
-                                    Directory.CreateDirectory(dirPath.Replace(cachedOutputDir, finalOutputDir));
+                                string cachedOutputDir = Path.Combine(workerOutputRoot, Path.GetFileNameWithoutExtension(file));
+                                string finalOutputDir = Path.Combine(job.OutputDir, Path.GetFileNameWithoutExtension(file));
 
-                                foreach (string newPath in Directory.GetFiles(cachedOutputDir, "*.*", SearchOption.AllDirectories))
-                                    File.Copy(newPath, newPath.Replace(cachedOutputDir, finalOutputDir), true);
+                                if (!Directory.Exists(cachedOutputDir))
+                                    throw new DirectoryNotFoundException("Blender did not create the expected output directory: " + cachedOutputDir);
 
-                                // Written last: its presence certifies that the whole object was committed.
-                                TryWriteRenderCompletionMarker(job, file, finalOutputDir);
+                                hddWriteGate.Wait(po.CancellationToken);
+                                try
+                                {
+                                    Directory.CreateDirectory(finalOutputDir);
+
+                                    foreach (string dirPath in Directory.GetDirectories(cachedOutputDir, "*", SearchOption.AllDirectories))
+                                        Directory.CreateDirectory(dirPath.Replace(cachedOutputDir, finalOutputDir));
+
+                                    foreach (string newPath in Directory.GetFiles(cachedOutputDir, "*.*", SearchOption.AllDirectories))
+                                        File.Copy(newPath, newPath.Replace(cachedOutputDir, finalOutputDir), true);
+
+                                    // Written last: its presence certifies that the whole object was committed.
+                                    TryWriteRenderCompletionMarker(job, file, finalOutputDir);
+                                }
+                                finally
+                                {
+                                    hddWriteGate.Release();
+                                }
+
+                                Directory.Delete(workerOutputRoot, true);
                             }
-                            finally
+                            catch (Exception ex)
                             {
-                                hddWriteGate.Release();
+                                throw new IOException($"Cleanup/copy failed for '{file}': {ex.Message}", ex);
                             }
 
-                            Directory.Delete(workerOutputRoot, true);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new IOException($"Cleanup/copy failed for '{file}': {ex.Message}", ex);
-                        }
+                            int index = Interlocked.Increment(ref currentIndex);
 
-                        int index = Interlocked.Increment(ref currentIndex);
-
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            double pct = (double)index / nbFiles * 100.0;
-                            job.Progress = pct;
-                            ProgressBar.Value = pct;
-                        }));
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                double pct = (double)index / nbFiles * 100.0;
+                                job.Progress = pct;
+                                ProgressBar.Value = pct;
+                            }));
 
                             JobAppendLog(job, $"[{index}/{nbFiles}] - {name} rendered.");
                         });
