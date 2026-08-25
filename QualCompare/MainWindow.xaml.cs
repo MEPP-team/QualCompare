@@ -7,6 +7,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,7 +36,7 @@ namespace QualCompare
             public string TempOutputRoot { get; set; }
             public string ModelCsvFilePath { get; set; }
             public string DefaultImageExt { get; set; } = "png";      // jpg|png pour --ext
-            public int MaxParallelism { get; set; } = 0;           // 0 => CPU/4 (fallback)
+            public int MaxParallelism { get; set; } = 0;           // 0 => CPU/4 Blender instances
             public bool PrefetchToSSD { get; set; } = true;         // copie OBJ+textures sur SSD
             public string UpAxis { get; set; } = "Y"; // X, Y, Z but Y default
             public string DefaultOutputRoot { get; set; }
@@ -191,6 +193,34 @@ namespace QualCompare
                 ?? ResolveBundledFile("render_single.py");
         }
 
+        private static bool IsScriptFromAnotherBuild(string configuredPath, string bundledPath)
+        {
+            if (string.IsNullOrWhiteSpace(configuredPath) || string.IsNullOrWhiteSpace(bundledPath))
+                return false;
+
+            try
+            {
+                string configuredFullPath = Path.GetFullPath(configuredPath);
+                string bundledFullPath = Path.GetFullPath(bundledPath);
+                if (string.Equals(configuredFullPath, bundledFullPath, StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                var scriptDirectory = Path.GetDirectoryName(configuredFullPath);
+                var configurationDirectory = string.IsNullOrWhiteSpace(scriptDirectory)
+                    ? null
+                    : Directory.GetParent(scriptDirectory);
+                var binDirectory = configurationDirectory?.Parent;
+
+                return string.Equals(Path.GetFileName(configuredFullPath), "render_single.py", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(Path.GetFileName(scriptDirectory), "scripts", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(Path.GetFileName(binDirectory?.FullName), "bin", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private static string DetectBundledModelCsvPath()
         {
             return ResolveBundledFile("resources", "Models_characteristics_and_settings.csv")
@@ -253,9 +283,11 @@ namespace QualCompare
             if (string.IsNullOrWhiteSpace(cfg.BlenderPath))
                 cfg.BlenderPath = DetectInstalledBlenderPath();
 
-            if (string.IsNullOrWhiteSpace(cfg.RenderScriptPath) || !File.Exists(cfg.RenderScriptPath))
+            var bundledScript = DetectBundledRenderScriptPath();
+            if (string.IsNullOrWhiteSpace(cfg.RenderScriptPath)
+                || !File.Exists(cfg.RenderScriptPath)
+                || IsScriptFromAnotherBuild(cfg.RenderScriptPath, bundledScript))
             {
-                var bundledScript = DetectBundledRenderScriptPath();
                 if (!string.IsNullOrWhiteSpace(bundledScript))
                     cfg.RenderScriptPath = bundledScript;
             }
@@ -926,13 +958,17 @@ namespace QualCompare
             if (string.IsNullOrEmpty(objDir))
                 throw new ArgumentException("Invalid objPath (no directory).", nameof(objPath));
 
-            var relRoot = Path.GetFileName(objDir);
-            if (string.IsNullOrEmpty(relRoot)) relRoot = "obj";
+            string cacheKey;
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] pathBytes = Encoding.UTF8.GetBytes(Path.GetFullPath(objPath).ToUpperInvariant());
+                byte[] hash = sha256.ComputeHash(pathBytes);
+                cacheKey = BitConverter.ToString(hash, 0, 8).Replace("-", string.Empty);
+            }
 
-            var objName = Path.GetFileNameWithoutExtension(objPath);
-            if (string.IsNullOrEmpty(objName)) objName = "obj";
-
-            var cacheRoot = Path.Combine(tempInputRoot, relRoot, objName);
+            // Keep the real OBJ filename for Blender/output naming, but do not repeat
+            // long dataset names in the temporary directory (MAX_PATH on .NET Framework).
+            var cacheRoot = Path.Combine(tempInputRoot, cacheKey);
             if (Directory.Exists(cacheRoot)) Directory.Delete(cacheRoot, true);
             Directory.CreateDirectory(cacheRoot);
 
@@ -940,14 +976,17 @@ namespace QualCompare
             SafeCopy(objPath, objDst);
 
             string mtlSrc = null;
-            foreach (var line in File.ReadLines(objPath))
+            if (string.Equals(Path.GetExtension(objPath), ".obj", StringComparison.OrdinalIgnoreCase))
             {
-                var l = line.Trim();
-                if (l.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase))
+                foreach (var line in File.ReadLines(objPath))
                 {
-                    var mtl = l.Substring(7).Trim().Trim('"');
-                    mtlSrc = Path.GetFullPath(Path.Combine(objDir, mtl));
-                    break;
+                    var l = line.Trim();
+                    if (l.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var mtl = l.Substring(7).Trim().Trim('"');
+                        mtlSrc = Path.GetFullPath(Path.Combine(objDir, mtl));
+                        break;
+                    }
                 }
             }
 
