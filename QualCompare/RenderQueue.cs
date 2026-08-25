@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -207,7 +208,7 @@ namespace QualCompare
                 YPos = ypos,
                 NbViews = nbViews,
 
-                UpAxis = Config.UpAxis, 
+                UpAxis = Config.UpAxis,
                 BgHex = Config.BackgroundColorHex,
                 ResolutionX = Config.ResolutionX,
                 ResolutionY = Config.ResolutionY,
@@ -228,6 +229,129 @@ namespace QualCompare
             };
 
             return job;
+        }
+
+        private static bool IsExpectedRenderImageValid(string path, int expectedWidth, int expectedHeight)
+        {
+            try
+            {
+                var file = new FileInfo(path);
+                if (!file.Exists || file.Length == 0)
+                    return false;
+
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var image = System.Drawing.Image.FromStream(stream, false, true))
+                    return image.Width == expectedWidth && image.Height == expectedHeight;
+            }
+            catch
+            {
+                // Invalid, truncated or unsupported image: the object must be rendered again.
+                return false;
+            }
+        }
+
+        private const string RenderCompletionMarkerName = ".qualcompare-complete-v1";
+
+        private static string GetRenderCompletionFingerprint(RenderJob job, string sourceFile)
+        {
+            var source = new FileInfo(sourceFile);
+            var script = new FileInfo(job.RenderScript ?? string.Empty);
+            var blender = new FileInfo(job.BlenderPath ?? string.Empty);
+            var data = new StringBuilder();
+
+            data.AppendLine(Path.GetFullPath(sourceFile));
+            data.AppendLine(source.Exists ? source.Length.ToString(CultureInfo.InvariantCulture) : "missing");
+            data.AppendLine(source.Exists ? source.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "missing");
+            data.AppendLine(job.NbViews.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine((job.Extension ?? string.Empty).Trim().ToLowerInvariant());
+            data.AppendLine(job.ResolutionX.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine(job.ResolutionY.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine(job.PositionsType ?? string.Empty);
+            data.AppendLine(job.ObjType ?? string.Empty);
+            data.AppendLine(job.YPos ?? string.Empty);
+            data.AppendLine(job.UpAxis ?? string.Empty);
+            data.AppendLine(job.RenderEngine ?? string.Empty);
+            data.AppendLine(job.TaaSamples.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine(job.FilterSize.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.MaskThreshold.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine(job.SunEnergy.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.SunTheta.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.SunPhi.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.PointRadiusFraction.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.PlyRenderMode ?? string.Empty);
+            data.AppendLine(job.PlyVoxelBits.ToString(CultureInfo.InvariantCulture));
+            data.AppendLine(job.VoxelRadiusMultiplier.ToString("R", CultureInfo.InvariantCulture));
+            data.AppendLine(job.BgHex ?? string.Empty);
+            data.AppendLine(script.Exists ? script.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "missing");
+            data.AppendLine(blender.Exists ? blender.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture) : "missing");
+
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(data.ToString()));
+                return BitConverter.ToString(hash).Replace("-", string.Empty);
+            }
+        }
+
+        private static bool HasCurrentRenderCompletionMarker(RenderJob job, string sourceFile, string outputDirectory)
+        {
+            try
+            {
+                string markerPath = Path.Combine(outputDirectory, RenderCompletionMarkerName);
+                return File.Exists(markerPath)
+                    && string.Equals(
+                        File.ReadAllText(markerPath).Trim(),
+                        GetRenderCompletionFingerprint(job, sourceFile),
+                        StringComparison.Ordinal);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void TryWriteRenderCompletionMarker(RenderJob job, string sourceFile, string outputDirectory)
+        {
+            try
+            {
+                Directory.CreateDirectory(outputDirectory);
+                File.WriteAllText(
+                    Path.Combine(outputDirectory, RenderCompletionMarkerName),
+                    GetRenderCompletionFingerprint(job, sourceFile),
+                    Encoding.UTF8);
+            }
+            catch
+            {
+                // Rendering remains valid; a future resume will perform the full image validation again.
+            }
+        }
+
+        private static bool IsRenderComplete(RenderJob job, string sourceFile)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(sourceFile);
+            string outputDirectory = Path.Combine(job.OutputDir, objectName);
+            string viewsDirectory = Path.Combine(outputDirectory, "views");
+            string masksDirectory = Path.Combine(outputDirectory, "masks");
+            string extension = (job.Extension ?? "png").Trim().TrimStart('.');
+
+            if (HasCurrentRenderCompletionMarker(job, sourceFile, outputDirectory))
+                return true;
+
+            if (!Directory.Exists(viewsDirectory) || !Directory.Exists(masksDirectory))
+                return false;
+
+            for (int viewIndex = 1; viewIndex <= job.NbViews; viewIndex++)
+            {
+                string viewPath = Path.Combine(viewsDirectory, $"view_{viewIndex}.{extension}");
+                string maskPath = Path.Combine(masksDirectory, $"mask_{viewIndex}.{extension}");
+
+                if (!IsExpectedRenderImageValid(viewPath, job.ResolutionX, job.ResolutionY)
+                    || !IsExpectedRenderImageValid(maskPath, job.ResolutionX, job.ResolutionY))
+                    return false;
+            }
+
+            // Migrate legacy outputs once. Later resumes only need this small marker.
+            TryWriteRenderCompletionMarker(job, sourceFile, outputDirectory);
+            return true;
         }
 
         private async Task RunRenderJobAsync(RenderJob job)
@@ -255,6 +379,7 @@ namespace QualCompare
             Directory.CreateDirectory(job.TempOutputRoot);
 
             var hddReadGate = new SemaphoreSlim(1, 1);
+            var hddWriteGate = new SemaphoreSlim(1, 1);
 
             string searchPattern = "*." + job.ObjType;
 
@@ -273,8 +398,7 @@ namespace QualCompare
                 }).ToArray();
 
             int nbFiles = allFiles.Length;
-            int currentIndex = 0;
-            
+
             if (nbFiles == 0)
             {
                 Dispatcher.Invoke(() => job.State = RenderJobState.Failed);
@@ -286,147 +410,232 @@ namespace QualCompare
 
             try
             {
+                var filesToRender = new System.Collections.Generic.List<string>(nbFiles);
+                int completedBeforeStart = 0;
+                int scannedFiles = 0;
+                var resumeScan = Stopwatch.StartNew();
+                TimeSpan lastResumeLog = TimeSpan.Zero;
+                JobAppendLog(job, $"Resume scan started: checking {nbFiles} objects on the output drive...");
+
+                foreach (string file in allFiles)
+                {
+                    token.ThrowIfCancellationRequested();
+                    if (IsRenderComplete(job, file))
+                        completedBeforeStart++;
+                    else
+                        filesToRender.Add(file);
+
+                    scannedFiles++;
+                    TimeSpan elapsed = resumeScan.Elapsed;
+                    if (scannedFiles == nbFiles || elapsed - lastResumeLog >= TimeSpan.FromSeconds(2))
+                    {
+                        double scanRate = elapsed.TotalSeconds > 0
+                            ? scannedFiles / elapsed.TotalSeconds
+                            : 0;
+                        JobAppendLog(job,
+                            $"Resume scan: {scannedFiles}/{nbFiles} checked, " +
+                            $"{completedBeforeStart} complete, {filesToRender.Count} to render " +
+                            $"({scanRate:F1} objects/s).");
+                        lastResumeLog = elapsed;
+                    }
+                }
+
+                resumeScan.Stop();
+                JobAppendLog(job, $"Resume scan finished in {resumeScan.Elapsed.TotalSeconds:F1}s.");
+
+                int currentIndex = completedBeforeStart;
+                if (completedBeforeStart > 0)
+                {
+                    double resumedProgress = (double)completedBeforeStart / nbFiles * 100.0;
+                    Dispatcher.Invoke(() =>
+                    {
+                        job.Progress = resumedProgress;
+                        ProgressBar.Value = resumedProgress;
+                    });
+                    JobAppendLog(job, $"Resume: {completedBeforeStart}/{nbFiles} objects already complete and skipped; {filesToRender.Count} remaining.");
+                }
+
                 var po = new ParallelOptions
                 {
-                    MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 4),
+                    MaxDegreeOfParallelism = job.MaxParallelism > 0
+                        ? job.MaxParallelism
+                        : Math.Max(1, Environment.ProcessorCount / 4),
                     CancellationToken = token
                 };
-
-                await Task.Run(() =>
+                if (filesToRender.Count == 0)
                 {
-                    Parallel.ForEach(allFiles, po, file =>
+                    JobAppendLog(job, "Resume: all objects are already complete; no Blender process started.");
+                }
+                else
+                {
+                    JobAppendLog(job, $"Pipeline started with {po.MaxDegreeOfParallelism} Blender workers, 4 threads per Blender and one HDD output writer.");
+
+                    await Task.Run(() =>
                     {
-                        po.CancellationToken.ThrowIfCancellationRequested();
-
-                        string cachedObjPath;
-                        hddReadGate.Wait(po.CancellationToken);
-                        try
+                        Parallel.ForEach(filesToRender, po, file =>
                         {
-                            cachedObjPath = PrefetchObjToSSD(file, job.TempInputRoot);
-                        }
-                        finally
-                        {
-                            hddReadGate.Release();
-                        }
+                            po.CancellationToken.ThrowIfCancellationRequested();
 
-                        string name = Path.GetFileNameWithoutExtension(file);
-
-                        //string args =
-                        //    $"--background --python \"{job.RenderScript}\" -- " +
-                        //    $"--obj \"{cachedObjPath}\" " +
-                        //    $"--out \"{job.TempOutputRoot}\" " +
-                        //    $"--nb_views {job.NbViews} " +
-                        //    $"--ext {job.Extension} " +
-                        //    $"--positions_type {job.PositionsType} " +
-                        //    $"--file_type {job.FileType} " +
-                        //    $"--obj_type {job.ObjType} " +
-                        //    $"--ypos {job.YPos}";
-                        string args = $"--background " +
-                                      $"--python \"{job.RenderScript}\" " +
-                                      $"-- " +
-                                      // --- Input parameters ---
-                                      $"--obj \"{cachedObjPath}\" " +
-                                      $"--out \"{job.TempOutputRoot}\" " +
-                                      $"--nb_views {job.NbViews} " +
-                                      $"--positions_type {job.PositionsType} " +
-                                      $"--ext {job.Extension} " +
-                                      $"--file_type {job.FileType} " +
-                                      $"--obj_type {job.ObjType} " +
-                                      $"--ypos {job.YPos} " +
-                                      $"--up_axis {job.UpAxis} " +
-                                      $"--resx {job.ResolutionX} " +
-                                      $"--resy {job.ResolutionY} " +
-                                      $"--engine {job.RenderEngine} " +
-                                      $"--taa {job.TaaSamples} " +
-                                      $"--filter_size {job.FilterSize.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--mask_threshold {job.MaskThreshold} " +
-                                      $"--sun_energy {job.SunEnergy.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--sun_theta {job.SunTheta.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--sun_phi {job.SunPhi.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--point_radius_fraction {job.PointRadiusFraction.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--ply_render {job.PlyRenderMode} " +
-                                      $"--ply_voxel_bits {job.PlyVoxelBits} " +
-                                      $"--voxel_radius_multiplier {job.VoxelRadiusMultiplier.ToString(CultureInfo.InvariantCulture)} " +
-                                      $"--bg_color {job.BgHex}";
-
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = job.BlenderPath,
-                            Arguments = args,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = false,
-                            RedirectStandardError = true,
-                            CreateNoWindow = true,
-                            StandardErrorEncoding = Encoding.UTF8
-                        };
-
-                        using (Process p = Process.Start(psi))
-                        {
-                            if (p == null) throw new InvalidOperationException("Blender process couldn't start.");
-
-                            job.RunningProcesses.TryAdd(p.Id, p);
-
-                            p.ErrorDataReceived += (s, ea) =>
+                            string cachedObjPath = file;
+                            bool inputWasPrefetched = false;
+                            if (job.PrefetchToSSD)
                             {
-                                if (string.IsNullOrWhiteSpace(ea.Data)) return;
-
-                                // Blender writes normal logs AND warnings to stderr, not only errors.
-                                // Classify so benign warnings are not surfaced as [ERROR].
-                                string line = ea.Data;
-                                string lower = line.ToLowerInvariant();
-                                string tag =
-                                    (lower.Contains("error") || lower.Contains("traceback") ||
-                                     lower.Contains("exception") || lower.Contains("failed")) ? "[ERROR] "
-                                    : (lower.Contains("warning") || lower.Contains("deprecat")) ? "[WARN] "
-                                    : "[Blender] ";
-
-                                JobAppendLog(job, tag + line);
-                            };
-                            p.BeginErrorReadLine();
-
-                            p.WaitForExit();
-
-                            job.RunningProcesses.TryRemove(p.Id, out _);
-                        }
-
-                        // Cleanup + copy cached output
-                        try
-                        {
-                            Directory.Delete(Path.GetDirectoryName(cachedObjPath), true);
-
-                            string cachedOutputDir = Path.Combine(job.TempOutputRoot, Path.GetFileNameWithoutExtension(file));
-                            string finalOutputDir = Path.Combine(job.OutputDir, Path.GetFileNameWithoutExtension(file));
-
-                            if (Directory.Exists(cachedOutputDir))
-                            {
-                                Directory.CreateDirectory(finalOutputDir);
-
-                                foreach (string dirPath in Directory.GetDirectories(cachedOutputDir, "*", SearchOption.AllDirectories))
-                                    Directory.CreateDirectory(dirPath.Replace(cachedOutputDir, finalOutputDir));
-
-                                foreach (string newPath in Directory.GetFiles(cachedOutputDir, "*.*", SearchOption.AllDirectories))
-                                    File.Copy(newPath, newPath.Replace(cachedOutputDir, finalOutputDir), true);
-
-                                Directory.Delete(cachedOutputDir, true);
+                                hddReadGate.Wait(po.CancellationToken);
+                                try
+                                {
+                                    cachedObjPath = PrefetchObjToSSD(file, job.TempInputRoot);
+                                    inputWasPrefetched = true;
+                                }
+                                finally
+                                {
+                                    hddReadGate.Release();
+                                }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            JobAppendLog(job, "[ERROR] Cleanup/copy failed: " + ex.Message);
-                        }
 
-                        int index = Interlocked.Increment(ref currentIndex);
+                            string name = Path.GetFileNameWithoutExtension(file);
+                            string workerKey = inputWasPrefetched
+                                ? Path.GetFileName(Path.GetDirectoryName(cachedObjPath))
+                                : Guid.NewGuid().ToString("N");
+                            string workerOutputRoot = Path.Combine(job.TempOutputRoot, workerKey);
+                            Directory.CreateDirectory(workerOutputRoot);
 
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            double pct = (double)index / nbFiles * 100.0;
-                            job.Progress = pct;
-                            ProgressBar.Value = pct;
-                        }));
+                            //string args =
+                            //    $"--background --python \"{job.RenderScript}\" -- " +
+                            //    $"--obj \"{cachedObjPath}\" " +
+                            //    $"--out \"{job.TempOutputRoot}\" " +
+                            //    $"--nb_views {job.NbViews} " +
+                            //    $"--ext {job.Extension} " +
+                            //    $"--positions_type {job.PositionsType} " +
+                            //    $"--file_type {job.FileType} " +
+                            //    $"--obj_type {job.ObjType} " +
+                            //    $"--ypos {job.YPos}";
+                            string args = $"--background " +
+                                          $"--python \"{job.RenderScript}\" " +
+                                          $"-- " +
+                                          // --- Input parameters ---
+                                          $"--obj \"{cachedObjPath}\" " +
+                                          $"--out \"{workerOutputRoot}\" " +
+                                          $"--nb_views {job.NbViews} " +
+                                          $"--positions_type {job.PositionsType} " +
+                                          $"--ext {job.Extension} " +
+                                          $"--file_type {job.FileType} " +
+                                          $"--obj_type {job.ObjType} " +
+                                          $"--ypos {job.YPos} " +
+                                          $"--up_axis {job.UpAxis} " +
+                                          $"--resx {job.ResolutionX} " +
+                                          $"--resy {job.ResolutionY} " +
+                                          $"--threads 4 " +
+                                          $"--engine {job.RenderEngine} " +
+                                          $"--taa {job.TaaSamples} " +
+                                          $"--filter_size {job.FilterSize.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--mask_threshold {job.MaskThreshold} " +
+                                          $"--sun_energy {job.SunEnergy.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--sun_theta {job.SunTheta.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--sun_phi {job.SunPhi.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--point_radius_fraction {job.PointRadiusFraction.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--ply_render {job.PlyRenderMode} " +
+                                          $"--ply_voxel_bits {job.PlyVoxelBits} " +
+                                          $"--voxel_radius_multiplier {job.VoxelRadiusMultiplier.ToString(CultureInfo.InvariantCulture)} " +
+                                          $"--bg_color {job.BgHex}";
 
-                        JobAppendLog(job, $"[{index}/{nbFiles}] - {name} rendered.");
-                    });
-                }, token);
+                            var psi = new ProcessStartInfo
+                            {
+                                FileName = job.BlenderPath,
+                                Arguments = args,
+                                UseShellExecute = false,
+                                RedirectStandardOutput = false,
+                                RedirectStandardError = true,
+                                CreateNoWindow = true,
+                                StandardErrorEncoding = Encoding.UTF8
+                            };
+
+                            int blenderExitCode;
+                            using (Process p = Process.Start(psi))
+                            {
+                                if (p == null) throw new InvalidOperationException("Blender process couldn't start.");
+
+                                job.RunningProcesses.TryAdd(p.Id, p);
+
+                                p.ErrorDataReceived += (s, ea) =>
+                                {
+                                    if (string.IsNullOrWhiteSpace(ea.Data)) return;
+
+                                    // Blender writes normal logs AND warnings to stderr, not only errors.
+                                    // Classify so benign warnings are not surfaced as [ERROR].
+                                    string line = ea.Data;
+                                    string lower = line.ToLowerInvariant();
+                                    string tag =
+                                        (lower.Contains("error") || lower.Contains("traceback") ||
+                                         lower.Contains("exception") || lower.Contains("failed")) ? "[ERROR] "
+                                        : (lower.Contains("warning") || lower.Contains("deprecat")) ? "[WARN] "
+                                        : "[Blender] ";
+
+                                    JobAppendLog(job, tag + line);
+                                };
+                                p.BeginErrorReadLine();
+
+                                p.WaitForExit();
+                                blenderExitCode = p.ExitCode;
+                                // Ensure the asynchronous stderr reader has consumed all pending lines.
+                                p.WaitForExit();
+
+                                job.RunningProcesses.TryRemove(p.Id, out _);
+                            }
+
+                            if (blenderExitCode != 0)
+                                throw new InvalidOperationException($"Blender failed for '{file}' (exit code {blenderExitCode}).");
+
+                            // Cleanup + copy cached output
+                            try
+                            {
+                                if (inputWasPrefetched)
+                                    Directory.Delete(Path.GetDirectoryName(cachedObjPath), true);
+
+                                string cachedOutputDir = Path.Combine(workerOutputRoot, Path.GetFileNameWithoutExtension(file));
+                                string finalOutputDir = Path.Combine(job.OutputDir, Path.GetFileNameWithoutExtension(file));
+
+                                if (!Directory.Exists(cachedOutputDir))
+                                    throw new DirectoryNotFoundException("Blender did not create the expected output directory: " + cachedOutputDir);
+
+                                hddWriteGate.Wait(po.CancellationToken);
+                                try
+                                {
+                                    Directory.CreateDirectory(finalOutputDir);
+
+                                    foreach (string dirPath in Directory.GetDirectories(cachedOutputDir, "*", SearchOption.AllDirectories))
+                                        Directory.CreateDirectory(dirPath.Replace(cachedOutputDir, finalOutputDir));
+
+                                    foreach (string newPath in Directory.GetFiles(cachedOutputDir, "*.*", SearchOption.AllDirectories))
+                                        File.Copy(newPath, newPath.Replace(cachedOutputDir, finalOutputDir), true);
+
+                                    // Written last: its presence certifies that the whole object was committed.
+                                    TryWriteRenderCompletionMarker(job, file, finalOutputDir);
+                                }
+                                finally
+                                {
+                                    hddWriteGate.Release();
+                                }
+
+                                Directory.Delete(workerOutputRoot, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new IOException($"Cleanup/copy failed for '{file}': {ex.Message}", ex);
+                            }
+
+                            int index = Interlocked.Increment(ref currentIndex);
+
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                double pct = (double)index / nbFiles * 100.0;
+                                job.Progress = pct;
+                                ProgressBar.Value = pct;
+                            }));
+
+                            JobAppendLog(job, $"[{index}/{nbFiles}] - {name} rendered.");
+                        });
+                    }, token);
+                }
 
                 sw.Stop();
 
@@ -462,10 +671,29 @@ namespace QualCompare
             {
                 sw.Stop();
 
+                string errorDetails;
+                var aggregateException = ex as AggregateException;
+                if (aggregateException != null)
+                {
+                    var innerErrors = aggregateException
+                        .Flatten()
+                        .InnerExceptions
+                        .Select((inner, index) =>
+                            $"  {index + 1}. {inner.GetType().Name}: {inner.Message}");
+
+                    errorDetails = "One or more rendering tasks failed:"
+                        + Environment.NewLine
+                        + string.Join(Environment.NewLine, innerErrors);
+                }
+                else
+                {
+                    errorDetails = $"{ex.GetType().Name}: {ex.Message}";
+                }
+
                 Dispatcher.Invoke(() =>
                 {
                     job.State = RenderJobState.Failed;
-                    JobAppendLog(job, "[ERROR] " + ex.Message);
+                    JobAppendLog(job, "[ERROR] " + errorDetails);
 
                     StopRenderButton.IsEnabled = false;
                     ProgressBar.Value = 0;

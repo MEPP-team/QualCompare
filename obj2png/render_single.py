@@ -6,8 +6,7 @@ import argparse
 import cv2
 import numpy as np
 from mathutils import Vector, Matrix
-import multiprocessing
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Tuple
 
 # Add current directory to sys.path to import helper modules
@@ -31,7 +30,7 @@ class RenderConfig:
     sun_theta_deg: float = 30.0
     sun_phi_deg: float = 50.0
     point_radius_fraction: float = 0.003
-    threads: int = field(default_factory=multiprocessing.cpu_count)
+    threads: int = 4
 
 
 def clean_scene():
@@ -122,6 +121,7 @@ def setup_scene(obj_path: str, config: RenderConfig):
     # scene.render.border_max_y = 1.0
     
     scene.render.image_settings.compression = 0
+    scene.render.threads_mode = "FIXED"
     scene.render.threads = config.threads
 
     scene.world.use_nodes = False
@@ -767,6 +767,7 @@ def build_config_from_args(args) -> RenderConfig:
         sun_theta_deg=args.sun_theta,
         sun_phi_deg=args.sun_phi,
         point_radius_fraction=args.point_radius_fraction,
+        threads=args.threads,
     )
 
 def hex_to_rgb01(s):
@@ -827,6 +828,7 @@ def main():
     # Render configuration
     parser.add_argument("--resx", type=int, default=650, help="Horizontal resolution in pixels.")
     parser.add_argument("--resy", type=int, default=550, help="Vertical resolution in pixels.")
+    parser.add_argument("--threads", type=int, default=4, help="CPU threads allocated to this Blender instance.")
     parser.add_argument("--taa", type=int, default=64, help="Eevee TAA render samples.")
     parser.add_argument("--filter_size", type=float, default=1.5, help="Pixel filter size.")
     parser.add_argument(

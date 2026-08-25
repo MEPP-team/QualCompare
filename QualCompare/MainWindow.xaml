@@ -409,7 +409,7 @@
                         </ComboBox>
 
                         <!-- MaxParallelism -->
-                        <TextBlock Grid.Row="14" Grid.Column="0" Text="ParallÃ©lisme max (0 = auto) :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Text="ParallÃ©lisme max (0 = CPU/4) :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBox x:Name="MaxParallelismNumeric" Grid.Row="14" Grid.Column="1" Width="140" PreviewTextInput="NumberInput_PreviewTextInput" DataObject.Pasting="NumberInput_Pasting"/>
 
                         <!-- Prefetch -->
